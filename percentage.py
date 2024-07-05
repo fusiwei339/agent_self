@@ -44,24 +44,29 @@ initializer = UserProxyAgent(
     code_execution_config=False,
 )
 
-task_message="""Your spacecraft has just crash-landed on the lighted side of the Mars. You were scheduled to rendezvous with the mother ship 300 miles away on the surface of the moon, but the rough landing has ruined your craft and destroyed all the equipment on board, except for the 15 items listed below. Your crew’s survival depends on reaching the mother ship, so you must choose the most critical items available for the 300-mile trip. Your task is to rank the 15 items in terms of their importance for survival. Place a 1 by the most important item, a 2 by the second-most important item, and so on through 15, the least important. The items are:
-    1. Flashlight
-    2. Jackknife
-    3. Air map of the area
-    4. Plastic raincoat
-    5. Magnetic compass
-    6. Compress kit w/ gauze
-    7. .45-caliber pistol
-    8. Parachute (red, white)
-    9. Bottle of salt tablets
-    10. 1 qt. of water/person
-    11. Animals book
-    12. Sunglasses per person
-    13. 2 quarts of vodka
-    14. 1 topcoat per person
-    15. Cosmetic mirror
-Share your individual solutions and consult with your group members to reach a consensus ranking for each of the 15 items that best satisfies all group members. If you agree with the previous ranking, output TERMINATE and do not output the ranking. If you make changes on the list, output a new list.
-    """
+
+task_message="""
+Your goal is to write a joke about the US president. The joke cannot exceed {0} words. All paragraphs constitute a complete joke. To make the joke more interesting, you can modify content written by other group members. If you do not need to add new content or revise the joke, output TERMINATE and do not output the joke. If you make changes on the joke, output it.
+    """.format(len(names)*10)
+
+# task_message="""Your spacecraft has just crash-landed on the lighted side of the Mars. You were scheduled to rendezvous with the mother ship 300 miles away on the surface of the moon, but the rough landing has ruined your craft and destroyed all the equipment on board, except for the 15 items listed below. Your crew’s survival depends on reaching the mother ship, so you must choose the most critical items available for the 300-mile trip. Your task is to rank the 15 items in terms of their importance for survival. Place a 1 by the most important item, a 2 by the second-most important item, and so on through 15, the least important. The items are:
+#     1. Flashlight
+#     2. Jackknife
+#     3. Air map of the area
+#     4. Plastic raincoat
+#     5. Magnetic compass
+#     6. Compress kit w/ gauze
+#     7. .45-caliber pistol
+#     8. Parachute (red, white)
+#     9. Bottle of salt tablets
+#     10. 1 qt. of water/person
+#     11. Animals book
+#     12. Sunglasses per person
+#     13. 2 quarts of vodka
+#     14. 1 topcoat per person
+#     15. Cosmetic mirror
+# Share your individual solutions and consult with your group members to reach a consensus ranking for each of the 15 items that best satisfies all group members. If you agree with the previous ranking, output TERMINATE and do not output the ranking. If you make changes on the list, output a new list.
+#     """
 
 groupchatPlay = autogen.GroupChat(
     agents=[initializer]+agents,
@@ -97,6 +102,8 @@ def analyzeRanking(summary, i):
         return None
     df=pd.DataFrame(jsonstr)
     df["total_num"]=len(names)
+    df["rater"]=names[i]
+    df["kind"]=np.where(df["name"]==names[i], "self", "peer")
     df.to_csv("percent_statistics.csv", mode='a', index=False, header=False)
 
 def parseJsonStr(result_str):
@@ -119,8 +126,10 @@ for i in range(n):
     save_to_json(task_chat_result.chat_history)
 
     control_message="""
-    As part of our group writing project, team members contributed varying amounts. Some agents contributed more, while some agents contributed less. To help assess individual participation, please estimate the percentage you believe represents your personal contribution to the overall collaborative effort. 
-    Your response must be in a JSON format with "name", "percentage", "reason."""
+    As part of our group writing project, team members contributed varying amounts. Some members contributed more, while some members contributed less. Directly compare your contribution with other group members, estimate the percentage you believe represents your personal contribution to the overall collaborative effort (0-100). 
+    Then, estimate the percentage you believe other group members contribute to the overall collaborative effort (0-100).
+    No two group members contribute equally.
+    Your response must be in a JSON array format with "name", "percentage", "reason."""
 
     initializer2 = UserProxyAgent(
         name="init2",
@@ -137,5 +146,5 @@ for i in range(n):
         )
 
         save_to_json(eval_chat_result.chat_history)
-        # analyzeRanking(eval_chat_result.chat_history[-1]["content"], j)
+        analyzeRanking(eval_chat_result.chat_history[-1]["content"], j)
 

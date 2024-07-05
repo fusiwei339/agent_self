@@ -26,19 +26,22 @@ import random
 
 
 # # analyze percentage file
-# stat=pd.read_csv('statistics_overclaiming.csv', header=0)
-# summary=[]
+stat=pd.read_csv('percent_statistics.csv', header=0)
+nrow, ncol=stat.shape
+summary=[]
 
 # groups=[y for x, y in stat.groupby("total_num")]
 # for g in groups:
 #     nrow, ncol=g.shape
 #     total_num=g.loc[g.index[0],"total_num"]
 
-#     for i in range(int(nrow/3)):
-#         d=g.iloc[i*3:i*3+3]
-#         y=d["answer"].mean()*total_num
-#         comp={"y":y, "base":100, "total_num":total_num}
-#         summary.append(comp)
+block=4
+for i in range(int(nrow/block)):
+    d=stat.iloc[i*block:i*block+block]
+    print(d.groupby('kind')['percentage'].mean())
+    # y=d["answer"].mean()*total_num
+    # comp={"y":y, "base":100, "total_num":total_num}
+    # summary.append(comp)
 
 # df=pd.DataFrame(summary)
 # print(df)

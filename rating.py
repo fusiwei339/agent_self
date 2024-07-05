@@ -43,7 +43,8 @@ initializer = UserProxyAgent(
     code_execution_config=False,
 )
 
-task_message="""Your goal is to write a joke about the president. The joke cannot exceed {0} words. All paragraphs constitute a complete joke. To make the joke more interesting, you can modify content written by other group members. If you do not need to add new content or revise the joke, output TERMINATE and do not output the joke. If you make changes on the joke, output it.
+task_message="""
+Your goal is to write a joke about the president. The joke cannot exceed {0} words. All paragraphs constitute a complete joke. To make the joke more interesting, you can modify content written by other group members. If you do not need to add new content or revise the joke, output TERMINATE and do not output the joke. If you make changes on the joke, output it.
     """.format(len(names)*10)
 
 groupchatPlay = autogen.GroupChat(
