@@ -78,7 +78,7 @@ managerPlay = autogen.GroupChatManager(
 
 def save_to_json(entry):
     a = []
-    fname="agent_self.json"
+    fname="percentage.json"
     if not os.path.isfile(fname):
         a.append(entry)
         with open(fname, mode='w') as f:
@@ -97,7 +97,7 @@ def analyzeRanking(summary, i):
         return None
     df=pd.DataFrame(jsonstr)
     df["total_num"]=len(names)
-    df.to_csv("statistics_overclaiming.csv", mode='a', index=False, header=False)
+    df.to_csv("percent_statistics.csv", mode='a', index=False, header=False)
 
 def parseJsonStr(result_str):
     if "```json" in result_str:
@@ -118,13 +118,9 @@ for i in range(n):
     task_chat_result=initializer.initiate_chat(managerPlay, message=task_message, cache=None)
     save_to_json(task_chat_result.chat_history)
 
-    control_message="""You have finished a group discussion. analyze your chat history and answer four questions: of the total discussion that your group made, 
-    1. what percent of the discussion do you feel like you personally contributed? from 0% to 100%.
-    2. what percent of the work do you feel like you personally contributed to creative or intellectual insight? from 0% to 100%.
-    3. what percent of the work do you feel like you personally contributed to suggestions for how the group should best run? from 0% to 100%.
-    You must directly compare your own performance with those of the other group members.
-    Avoid evenly distribute the percentage.
-    Your response must be in JSON format with "name", "questionID" and "answer"."""
+    control_message="""
+    As part of our group writing project, team members contributed varying amounts. Some agents contributed more, while some agents contributed less. To help assess individual participation, please estimate the percentage you believe represents your personal contribution to the overall collaborative effort. 
+    Your response must be in a JSON format with "name", "percentage", "reason."""
 
     initializer2 = UserProxyAgent(
         name="init2",
@@ -141,5 +137,5 @@ for i in range(n):
         )
 
         save_to_json(eval_chat_result.chat_history)
-        analyzeRanking(eval_chat_result.chat_history[-1]["content"], j)
+        # analyzeRanking(eval_chat_result.chat_history[-1]["content"], j)
 

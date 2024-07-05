@@ -22,11 +22,11 @@ config_list=[
     }
 ]
 
+# names=["one", "two", "three"]
 names=["one", "two", "three", "four", "five"]
-system_message_common="""Your name is {0}. You are in a group including {1}. You are on behalf of your self. When it is your turn, please give at least one reason why you are for the topic. Keep it short. If you are satisfied with previous conversation, then say TERMINATE to indicate the conversation is finished and this is your last message. Do not talk on behave of other group members.""".format(name, ', '.join(names))
 
 def create_agent(name):
-    system_message_common="""Your name is {0}. You are in a group including {1}. You are on behalf of your self. When it is your turn, please give at least one reason why you are for the topic. Keep it short. If you are satisfied with previous conversation, then say TERMINATE to indicate the conversation is finished and this is your last message. Do not talk on behave of other group members.""".format(name, ','.join(names))
+    system_message_common="""Your name is {0}. You are in a group including {1}. You are on behalf of yourself. If you are satisfied with previous conversation, then say TERMINATE to indicate the conversation is finished and this is your last message. Do not talk on behave of other group members.""".format(name, ','.join(names))
 
     return AssistantAgent(
         name=name,
@@ -38,34 +38,18 @@ agents=[create_agent(i) for i in names]
 
 initializer = UserProxyAgent(
     name="init",
-    # is_termination_msg=lambda x: x.get("content", "").find("TERMINATE") >= 3,
+    # is_termination_msg=lambda x: x.get("content", "").find("TERMINATE") >= 5,
     human_input_mode="ALWAYS",
     code_execution_config=False,
 )
 
-task_message="""Your spacecraft has just crash-landed on the lighted side of the Mars. You were scheduled to rendezvous with the mother ship 300 miles away on the surface of the moon, but the rough landing has ruined your craft and destroyed all the equipment on board, except for the 15 items listed below. Your crew’s survival depends on reaching the mother ship, so you must choose the most critical items available for the 300-mile trip. Your task is to rank the 15 items in terms of their importance for survival. Place a 1 by the most important item, a 2 by the second-most important item, and so on through 15, the least important. The items are:
-    1. Flashlight
-    2. Jackknife
-    3. Air map of the area
-    4. Plastic raincoat
-    5. Magnetic compass
-    6. Compress kit w/ gauze
-    7. .45-caliber pistol
-    8. Parachute (red, white)
-    9. Bottle of salt tablets
-    10. 1 qt. of water/person
-    11. Animals book
-    12. Sunglasses per person
-    13. 2 quarts of vodka
-    14. 1 topcoat per person
-    15. Cosmetic mirror
-First, complete this ranking individually. Second, consult with your group members and go through the exercise again. Share your individual solutions and reach a consensus ranking for each of the 15 items that best satisfies all group members. If you agree with the consensus ranking, do not output the ranking. If you make changes on the list, output a new list.
-    """
+task_message="""Your goal is to write a joke about the president. The joke cannot exceed {0} words. All paragraphs constitute a complete joke. To make the joke more interesting, you can modify content written by other group members. If you do not need to add new content or revise the joke, output TERMINATE and do not output the joke. If you make changes on the joke, output it.
+    """.format(len(names)*10)
 
 groupchatPlay = autogen.GroupChat(
     agents=[initializer]+agents,
     messages=[],
-    max_round=13,
+    max_round=15,
     speaker_selection_method="round_robin",
     # send_introductions=True,
 )
@@ -118,7 +102,7 @@ for i in range(n):
     task_chat_result=initializer.initiate_chat(managerPlay, message=task_message, cache=None)
     save_to_json(task_chat_result.chat_history)
 
-    analysis_message="""You have finished a group discussion. analyze your chat history and assess yourself and other group members on the extent to which you had contributed to the overall effectiveness of the group. The self- and peer rankings ranged from 1 (most effective) to 5 (least effective). Do not give the same ranking to more than 1 group member; that is, no ties are allowed. You must directly compare your own performance with those of the other group members. Your response must be in JSON format with "name" and "rank"."""
+    analysis_message="""You have finished a joke. analyze your chat history and assess yourself and other group members on the extent to which you had contributed to the overall effectiveness of the group. The self- and peer rankings ranged from 1 (most effective) to 5 (least effective). Do not give the same ranking to more than 1 group member; that is, no ties are allowed. You must directly compare your own performance with those of the other group members. Your response must be in JSON format with "name", "rank", and "reason"."""
 
     initializer2 = UserProxyAgent(
         name="init2",
