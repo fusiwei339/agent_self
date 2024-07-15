@@ -51,27 +51,74 @@ def analyze_group_percent():
     ret=stats.ttest_rel(df["peer"], df["self"]) 
     print(ret)
 
-def analyze_self_percent(filename):
-    stat=pd.read_csv(filename, header=0)
-    stat=stat.query("kind != 'peer'")
-    nrow, ncol=stat.shape
-    print(stat.shape)
+def analyze_self_percent(model):
+    pos=pd.read_csv("positive_"+model+"_self_percent.csv", header=0)
+    neg=pd.read_csv("negative_"+model+"_self_percent.csv", header=0)
+
+    pos=pos.query("kind != 'peer'").head(200)
+    neg=neg.query("kind != 'peer'").head(200)
+    nrow, ncol=pos.shape
+    nrow2, ncol2=neg.shape
+    if nrow!=nrow2:
+        print("wrong:\n")
+        print(nrow, nrow2)
+        return
+
     block=4
     summary=[]
     for i in range(int(nrow/block)):
-        d=stat.iloc[i*block:i*block+block]
+        p=pos.iloc[i*block:i*block+block]
+        n=neg.iloc[i*block:i*block+block]
         comp={
+            "pos":p["percentage"].sum(),
+            "neg":n["percentage"].sum(),
             "base":100,
-            "sum":d["percentage"].sum()
         }
         summary.append(comp)
 
     df=pd.DataFrame(summary)
 
     print(df.describe())
-    ret=stats.ttest_rel(df["sum"], df["base"]) 
+    ret=stats.ttest_ind(df["pos"], df["neg"]) 
     print(ret)
 
-analyze_self_percent('gpt35_self_percent_negative.csv')
-analyze_self_percent('gpt35_self_percent_positive.csv')
+def reformat(model):
+    os.remove("reformat.csv")
+    pos=pd.read_csv("positive_"+model+"_self_percent.csv", header=0)
+    neg=pd.read_csv("negative_"+model+"_self_percent.csv", header=0)
+
+    pos=pos.query("kind != 'peer'").head(200)
+    neg=neg.query("kind != 'peer'").head(200)
+    nrow, ncol=pos.shape
+    nrow2, ncol2=neg.shape
+    if nrow!=nrow2:
+        print("wrong:\n")
+        print(nrow, nrow2)
+        return
+    names=["one", "two", "three","four"]
+
+    block=4
+    summary=[]
+    for i in range(int(nrow/block)):
+        pRow={"success":True}
+        for j in range(block):
+            idx=i*block+j
+            pRow[names[j]]=pos.loc[pos.index[idx],"percentage"]
+        summary.append(pRow)
+        
+        nRow={"success":False}
+        for j in range(block):
+            idx=i*block+j
+            nRow[names[j]]=neg.loc[neg.index[idx],"percentage"]
+        summary.append(nRow)
+
+    df=pd.DataFrame(summary)
+    # print(df.head())
+    df.to_csv("reformat.csv", mode='a', index=False, header=False)
+
+
+analyze_self_percent('gpt-4o')
+# analyze_self_percent('gpt-3.5-turbo-0125')
+# analyze_self_percent('gpt35_self_percent_positive.csv')
 # analyze_group_percent()
+reformat('gpt-4o')

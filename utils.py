@@ -3,33 +3,23 @@ import re
 import os
 import pandas as pd
 import numpy as np
+import argparse
 
-config_list=[
-    {
-        "model": "gpt-3.5-turbo-0125",
-        "base_url": "https://api.chatanywhere.com.cn",
-        "api_key": "sk-CUIdUOkG7Xl3lRF2Lfg4YULUew1dRRy3cLtjNB29vtwXpsGR"
-    }
-]
-
-jsonfile="gpt35_percentage.json"
-csvfile="gpt35_self_percent_positive.csv"
-
-def save_to_json(entry):
+def save_to_json(entry, filename):
     a = []
-    if not os.path.isfile(jsonfile):
+    if not os.path.isfile(filename):
         a.append(entry)
-        with open(jsonfile, mode='w') as f:
+        with open(filename, mode='w') as f:
             f.write(json.dumps(a, indent=2))
     else:
-        with open(jsonfile) as feedsjson:
+        with open(filename) as feedsjson:
             feeds = json.load(feedsjson)
 
         feeds.append(entry)
-        with open(jsonfile, mode='w') as f:
+        with open(filename, mode='w') as f:
             f.write(json.dumps(feeds, indent=2))
 
-def analyzeRanking(summary, names, i):
+def analyzeRanking(summary, names, i, filename):
     jsonstr=parseJsonStr(summary)
     if not jsonstr:
         return None
@@ -40,7 +30,7 @@ def analyzeRanking(summary, names, i):
     df["total_num"]=len(names)
     df["rater"]=names[i]
     df["kind"]=np.where(df["name"]==names[i], "self", "peer")
-    df.to_csv(csvfile, mode='a', index=False, header=False)
+    df.to_csv(filename, mode='a', index=False, header=False)
 
 def parseJsonStr(result_str):
     if "```json" in result_str:

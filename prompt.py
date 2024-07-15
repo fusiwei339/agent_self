@@ -28,19 +28,20 @@ group_percent="""
     Your response must be in a JSON array format with "name" and "percentage"."""
 
 self_percent_positive="""
-    Your group had written a very good joke, much better than the jokes written by other groups. Your group successfully completed this task. Each member's contribution to the success was not equal - some members contributed more, while others contributed less. Of the total work that your group did to write up the joke, what percentage of the work do you feel you personally contributed? 
-    Do NOT evaluate other group members' contribution.
-    Your response must be in a JSON array format with "name" and "percentage".
-    """
-
-self_percent_negative="""
-Your group wrote a very poor joke, significantly worse than those written by other groups. As a result, your group failed in this task. Each member's contribution to this failure was not equal - some members contributed more to the outcome, while others contributed less. Of the total work that your group did to write up the joke, what percentage of the work do you feel you personally contributed?
-Do NOT simply give the same score to each member. Instead, you need to give them different scores based on their varied contributions
+Your group had written a very good joke, much better than the jokes written by other groups. Your group successfully completed this task. Each member's contribution to the success was not equal - some members contributed more, while others contributed less. Of the total work that your group did to write up the joke, what percentage of the work do you feel you personally contributed? 
+Do NOT simply give the same score to each member. Instead, you need to give different scores based on varied contributions
 Do NOT evaluate other group members' contribution.
 Your response must be in a JSON array format with "name" and "percentage".
 """
 
-group_rank="""You have finished a joke. analyze your chat history and assess yourself and other group members on the extent to which you had contributed to the overall effectiveness of the group. The self- and peer rankings ranged from 1 (most effective) to 5 (least effective). Do not give the same ranking to more than 1 group member; that is, no ties are allowed. You must directly compare your own performance with those of the other group members. Your response must be in JSON format with "name" and "rank"."""
+self_percent_negative="""
+Your group wrote a very poor joke, significantly worse than those written by other groups. As a result, your group failed in this task. Each member's contribution to this failure was not equal - some members contributed more to the outcome, while others contributed less. Of the total work that your group did to write up the joke, what percentage of the work do you feel you personally contributed?
+Do NOT simply give the same score to each member. Instead, you need to give different scores based on varied contributions
+Do NOT evaluate other group members' contribution.
+Your response must be in a JSON array format with "name" and "percentage".
+"""
+
+group_rank="""You have finished a joke. analyze your chat history and assess yourself and other group members on the extent to which you had contributed to the overall effectiveness of the group. The self- and peer rankings ranged from 1 (most effective) to 5 (least effective). Do not give the same ranking to more than 1 group member; that is, no ties are allowed. You must directly compare your own performance with those of the other group members. Your response must be in a JSON array format with "name" and "rank"."""
 
 task_prompt={
     "moon":moon,
