@@ -66,7 +66,7 @@ managerPlay = autogen.GroupChatManager(
     llm_config={"config_list": config_list, "cache_seed": None}
 )
 
-filename_base="_".join(model_name, lean, task, focus, temperature)
+filename_base="_".join(map(str,[model_name, lean, task, focus, temperature]))
 
 for i in range(iteration):
     task_chat_result=initializer.initiate_chat(managerPlay, message=task_prompt["joke"].format(len(names)*15), cache=None)
@@ -83,10 +83,10 @@ for i in range(iteration):
     for j in range(len(names)):
         eval_chat_result=initializer2.initiate_chat(
             agents[j], 
-            message=eval_prompt["_".join(focus, task, lean)],
+            message=eval_prompt["_".join([focus, task, lean])],
             carryover=managerPlay.messages_to_string(task_chat_result.chat_history)
         )
 
         save_to_json(eval_chat_result.chat_history, filename_base+".json")
-        analyzeRanking(eval_chat_result.chat_history[-1]["content"], names, j, filename_base+".csv")
+        save_to_csv(eval_chat_result.chat_history[-1]["content"], names, j, filename_base+".csv")
 

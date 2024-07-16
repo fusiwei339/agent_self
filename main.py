@@ -8,4 +8,5 @@ gender="None" # male, female, None
 
 iteration=2 #
 
-os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={lean} --temperature={temperature} --model={model} --focus={focus} --task={task} --iteration={iteration}")
+
+os.system("python3 /Users/siwei/repo/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={}".format(lean,model,focus,task,iteration,temperature))
