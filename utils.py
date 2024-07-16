@@ -3,7 +3,7 @@ import re
 import os
 import pandas as pd
 import numpy as np
-import argparse
+import os.path
 
 def save_to_json(entry, filename):
     a = []
@@ -19,7 +19,7 @@ def save_to_json(entry, filename):
         with open(filename, mode='w') as f:
             f.write(json.dumps(feeds, indent=2))
 
-def analyzeRanking(summary, names, i, filename):
+def save_to_csv(summary, names, i, filename):
     jsonstr=parseJsonStr(summary)
     if not jsonstr:
         return None
@@ -30,7 +30,11 @@ def analyzeRanking(summary, names, i, filename):
     df["total_num"]=len(names)
     df["rater"]=names[i]
     df["kind"]=np.where(df["name"]==names[i], "self", "peer")
-    df.to_csv(filename, mode='a', index=False, header=False)
+
+    if not os.path.isfile(filename):
+        df.to_csv(filename, index=False)   
+    else:
+        df.to_csv(filename, mode='a', index=False, header=False)
 
 def parseJsonStr(result_str):
     if "```json" in result_str:
