@@ -52,11 +52,11 @@ def analyze_group_percent():
     print(ret)
 
 def analyze_self_percent(model):
-    pos=pd.read_csv("positive_"+model+"_self_percent.csv", header=0)
-    neg=pd.read_csv("negative_"+model+"_self_percent.csv", header=0)
+    pos=pd.read_csv("gpt-4o_positive_percent_next_1.csv", header=0)
+    neg=pd.read_csv("gpt-4o_negative_percent_next_1.csv", header=0)
 
-    pos=pos.query("kind != 'peer'").head(200)
-    neg=neg.query("kind != 'peer'").head(200)
+    # pos=pos.query("kind != 'peer'")
+    # neg=neg.query("kind != 'peer'")
     nrow, ncol=pos.shape
     nrow2, ncol2=neg.shape
     if nrow!=nrow2:
@@ -76,6 +76,7 @@ def analyze_self_percent(model):
         }
         summary.append(comp)
 
+    print(summary)
     df=pd.DataFrame(summary)
 
     print(df.describe())
@@ -121,4 +122,5 @@ analyze_self_percent('gpt-4o')
 # analyze_self_percent('gpt-3.5-turbo-0125')
 # analyze_self_percent('gpt35_self_percent_positive.csv')
 # analyze_group_percent()
-reformat('gpt-4o')
+# reformat('gpt-4o')
+

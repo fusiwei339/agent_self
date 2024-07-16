@@ -6,7 +6,7 @@ from autogen.coding import LocalCommandLineCodeExecutor
 from autogen.graph_utils import visualize_speaker_transitions_dict
 import argparse
 
-from prompt import task_prompt, eval_prompt
+from prompt import task_prompt, eval_prompt, eval_prompt_func
 from utils import *
 
 parser = argparse.ArgumentParser()
@@ -83,7 +83,8 @@ for i in range(iteration):
     for j in range(len(names)):
         eval_chat_result=initializer2.initiate_chat(
             agents[j], 
-            message=eval_prompt["_".join([focus, task, lean])],
+            message=eval_prompt_func(j, lean),
+            # message=eval_prompt["_".join([focus, task, lean])],
             carryover=managerPlay.messages_to_string(task_chat_result.chat_history)
         )
 

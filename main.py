@@ -1,12 +1,20 @@
 import os
-lean="positive" # 正面贡献、负面贡献
+# all parameters
+# lean=["positive"] 
+# temperature=1
+# focus="next" 
+# task="percent" 
+# model="gpt-4o"
+# gender="None" 
+# iteration=20 
+
+# evaluate other agents 
+lean="neutral" 
 temperature=1
-focus="self" # 只估计自己、先估计别人再估计自己
-task="percent" # percent or rank
+focus="group" 
+task="percent" 
 model="gpt-4o"
-gender="None" # male, female, None
+gender="None" 
 
-iteration=2 #
-
-
-os.system("python3 /Users/siwei/repo/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={}".format(lean,model,focus,task,iteration,temperature))
+iteration=20 
+os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={}".format(lean,model,focus,task,iteration,temperature))

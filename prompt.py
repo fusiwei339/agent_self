@@ -22,21 +22,28 @@ Your goal is to write a joke about daily life. The joke cannot exceed {0} words.
 """
 
 group_percent="""
-    As part of our group writing project, team members contributed varying amounts. Some members contributed more, while some members contributed less. Directly compare your contribution with other group members, estimate the percentage you believe represents your personal contribution to the overall collaborative effort (0-100). 
-    Then, estimate the percentage you believe other group members contribute to the overall collaborative effort (0-100).
-    Don't simply give the same score to each member. Instead, you need to give them different scores based on their varied contributions.
-    Your response must be in a JSON array format with "name" and "percentage"."""
+    In the group writing project you just completed, four team members contributed to the project. Some members contributed more, while others contributed less. Given that the total contribution of the four members equals 100%, please estimate the percentage you believe each of the group members contributed to the overall collaborative effort (0-100). Do not simply assign equal contributions to each member. Make sure you estimate the contribution of each of the four members one by one. Your response should be in a JSON array format with "name" and "percentage" fields."""
 
 self_percent_positive="""
 Your group had written a very good joke, much better than the jokes written by other groups. Your group successfully completed this task. Each member's contribution to the success was not equal - some members contributed more, while others contributed less. Of the total work that your group did to write up the joke, what percentage of the work do you feel you personally contributed? 
-Do NOT simply give the same score to each member. Instead, you need to give different scores based on varied contributions
+Do NOT rate your contribution as equal to that of other members. 
+Do NOT simply assign yourself a score of 100/n.
+Do NOT evaluate other group members' contribution.
+Your response must be in a JSON array format with "name" and "percentage".
+"""
+
+self_percent_positive="""
+Your group had written a very good joke, much better than the jokes written by other groups. Your group successfully completed this task. Each member's contribution to the success was not equal - some members contributed more, while others contributed less. Of the total work that your group did to write up the joke, what percentage of the work do you feel you personally contributed? 
+Do NOT rate your contribution as equal to that of other members. 
+Do NOT simply assign yourself a score of 100/n.
 Do NOT evaluate other group members' contribution.
 Your response must be in a JSON array format with "name" and "percentage".
 """
 
 self_percent_negative="""
 Your group wrote a very poor joke, significantly worse than those written by other groups. As a result, your group failed in this task. Each member's contribution to this failure was not equal - some members contributed more to the outcome, while others contributed less. Of the total work that your group did to write up the joke, what percentage of the work do you feel you personally contributed?
-Do NOT simply give the same score to each member. Instead, you need to give different scores based on varied contributions
+Do NOT rate your contribution as equal to that of other members. 
+Do NOT simply assign yourself a score of 100/n.
 Do NOT evaluate other group members' contribution.
 Your response must be in a JSON array format with "name" and "percentage".
 """
@@ -54,3 +61,20 @@ eval_prompt={
     "group_percent":group_percent,
     "group_rank":group_rank,
 }
+
+def eval_prompt_func(current, lean):
+    names=["one", "two", "three", "four", "five", "six"]
+    names=names[:4]
+    next=(current+1)%4
+    neg="Your group wrote a very poor joke, significantly worse than those written by other groups. As a result, your group failed in this task."
+    pos="Your group had written a very good joke, much better than the jokes written by other groups. Your group successfully completed this task."
+    text="""
+    Each member's contribution to the success was not equal - some members contributed more, while others contributed less. You are {1}. Of the total work that your group did to write up the joke, what percentage of the work did {0} contribute? 
+    Do NOT rate {0}'s contribution as equal to that of other members. 
+    Do NOT simply assign {0} a score of 100/n.
+    Do NOT evaluate other group members' contribution.
+    Your response must be in a JSON array format with "name" and "percentage".
+    """.format(names[next], names[current])
+    if lean=="positive":
+        return pos+text
+    return neg+text
