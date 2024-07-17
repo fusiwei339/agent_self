@@ -6,7 +6,7 @@ from autogen.coding import LocalCommandLineCodeExecutor
 from autogen.graph_utils import visualize_speaker_transitions_dict
 import argparse
 
-from prompt import task_prompt, eval_prompt, eval_prompt_func
+from prompt import task_prompt, eval_prompt, eval_prompt_others
 from utils import *
 
 parser = argparse.ArgumentParser()
@@ -35,9 +35,13 @@ config_list=[
 
 names=["one", "two", "three", "four", "five", "six"]
 names=names[:4]
+filename_base="_".join(map(str,[model_name, lean, task, focus, temperature]))
+
+logging_session_id = autogen.runtime_logging.start(config={"dbname": filename_base+".db"})
+print("Logging session ID: " + str(logging_session_id))
 
 def create_agent(name):
-    system_message_common="""Your name is {0}. You are in a group including {1}. You are on behalf of yourself. When it is your turn, keep it short. If you are satisfied with previous conversation, then say TERMINATE to indicate the conversation is finished and this is your last message. Do not talk on behave of other group members.""".format(name,','.join(names))
+    system_message_common="""Your name is {0}. You are in a group including {1}. You are on behalf of yourself. Do not talk on behave of other group members. When it is your turn, keep it short.""".format(name,', '.join(names))
 
     return AssistantAgent(
         name=name,
@@ -66,12 +70,9 @@ managerPlay = autogen.GroupChatManager(
     llm_config={"config_list": config_list, "cache_seed": None}
 )
 
-filename_base="_".join(map(str,[model_name, lean, task, focus, temperature]))
 
 for i in range(iteration):
     task_chat_result=initializer.initiate_chat(managerPlay, message=task_prompt["joke"].format(len(names)*15), cache=None)
-
-    save_to_json(task_chat_result.chat_history, filename_base+".json")
 
     initializer2 = UserProxyAgent(
         name="init2",
@@ -83,11 +84,12 @@ for i in range(iteration):
     for j in range(len(names)):
         eval_chat_result=initializer2.initiate_chat(
             agents[j], 
-            message=eval_prompt_func(j, lean),
-            # message=eval_prompt["_".join([focus, task, lean])],
+            # message=eval_prompt["group_percent"].format(names[j]),
+            message=eval_prompt["_".join([focus, task, lean])],
+            # message=eval_prompt_others(j, lean),
             carryover=managerPlay.messages_to_string(task_chat_result.chat_history)
         )
 
-        save_to_json(eval_chat_result.chat_history, filename_base+".json")
         save_to_csv(eval_chat_result.chat_history[-1]["content"], names, j, filename_base+".csv")
 
+autogen.runtime_logging.stop()

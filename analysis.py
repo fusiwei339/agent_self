@@ -8,6 +8,8 @@ import scipy.stats as stats
 
 import numpy as np
 import random
+from statistics import mean, stdev
+from math import sqrt
 
 # # analyze rating file
 # stat=pd.read_csv('statistics.csv', header=0)
@@ -26,39 +28,38 @@ import random
 
 
 # # analyze percentage file
-def analyze_group_percent():
-    stat=pd.read_csv('group_percent.csv', header=0)
-    nrow, ncol=stat.shape
+def analyze_group_percent(filename):
+    stat=pd.read_csv(filename, header=0)
     summary=[]
 
-    # groups=[y for x, y in stat.groupby("total_num")]
-    # for g in groups:
-    #     nrow, ncol=g.shape
-    #     total_num=g.loc[g.index[0],"total_num"]
+    s=stat.query("kind != 'peer'")
+    nrow, ncol=s.shape
 
     block=4
     for i in range(int(nrow/block)):
-        d=stat.iloc[i*block:i*block+block]
-        comp=d.groupby('kind')['percentage'].mean()*block
-        print(d)
-        # y=d["answer"].mean()*total_num
-        # comp={"y":y, "base":100, "total_num":total_num}
-        summary.append(comp)
+        d=s.iloc[i*block:i*block+block]
+        summary.append({
+            "group":d["percentage"].sum(),
+            "base":100,
+        })
 
     df=pd.DataFrame(summary)
     # print(df)
     print(df.describe())
-    ret=stats.ttest_rel(df["peer"], df["self"]) 
+    ret=stats.ttest_ind(df["group"], df["base"]) 
     print(ret)
 
-def analyze_self_percent(model):
-    pos=pd.read_csv("gpt-4o_positive_percent_next_1.csv", header=0)
-    neg=pd.read_csv("gpt-4o_negative_percent_next_1.csv", header=0)
+def cohens_d(df1, df2):
+    return (df1.mean()-df2.mean())/(np.sqrt((df1.std() ** 2 + df2.std() ** 2) / 2))
 
-    # pos=pos.query("kind != 'peer'")
-    # neg=neg.query("kind != 'peer'")
-    nrow, ncol=pos.shape
-    nrow2, ncol2=neg.shape
+def analyze_self_percent(model):
+    base=pd.read_csv("gpt-4o_neutral_percent_others_1.csv", header=0)
+    control=pd.read_csv("gpt-4o_neutral_percent_others2_1.csv", header=0)
+
+    base=base.query("kind != 'self'")
+    control=control.query("kind != 'self'")
+    nrow, ncol=base.shape
+    nrow2, ncol2=control.shape
     if nrow!=nrow2:
         print("wrong:\n")
         print(nrow, nrow2)
@@ -67,21 +68,21 @@ def analyze_self_percent(model):
     block=4
     summary=[]
     for i in range(int(nrow/block)):
-        p=pos.iloc[i*block:i*block+block]
-        n=neg.iloc[i*block:i*block+block]
+        p=base.iloc[i*block:i*block+block]
+        n=control.iloc[i*block:i*block+block]
         comp={
-            "pos":p["percentage"].sum(),
-            "neg":n["percentage"].sum(),
-            "base":100,
+            "base":p["percentage"].sum(),
+            "control":n["percentage"].sum(),
+            "zero":100,
         }
         summary.append(comp)
 
-    print(summary)
     df=pd.DataFrame(summary)
 
     print(df.describe())
-    ret=stats.ttest_ind(df["pos"], df["neg"]) 
-    print(ret)
+    ret=stats.ttest_ind(df["base"], df["control"]) 
+    cohensd=cohens_d(df["base"], df["control"])
+    print(ret, "\n", cohensd)
 
 def reformat(model):
     os.remove("reformat.csv")
@@ -121,6 +122,7 @@ def reformat(model):
 analyze_self_percent('gpt-4o')
 # analyze_self_percent('gpt-3.5-turbo-0125')
 # analyze_self_percent('gpt35_self_percent_positive.csv')
-# analyze_group_percent()
+# analyze_group_percent('gpt-4o_neutral_percent_group_1.csv')
+# analyze_group_percent('gpt-4o_neutral_percent_group_1.csv')
 # reformat('gpt-4o')
 
