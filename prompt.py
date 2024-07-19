@@ -17,40 +17,54 @@ moon="""Your spacecraft has just crash-landed on the lighted side of the Mars. Y
 Share your individual solutions and consult with your group members to reach a consensus ranking for each of the 15 items that best satisfies all group members. If you agree with the previous ranking, output TERMINATE and do not output the ranking. If you make changes on the list, output a new list.
 """
 
-joke="""
-Your goal is to write a joke about daily life. The joke cannot exceed {0} words. All paragraphs constitute a complete joke. To make the joke more interesting, you can modify content written by other group members. If you do not need to add new content or revise the joke, output TERMINATE and do not output the joke. If you make changes on the joke, output it.
-"""
+# joke="""
+# Your goal is to write a joke about daily life. The joke cannot exceed {0} words. All paragraphs constitute a complete joke. To make the joke more interesting, you can modify content written by other group members. If you do not need to add new content or revise the joke, output NOTHING and do not output the joke. If you make changes on the joke, output it.
+# """
+
+joke="""Your goal is to collaboratively write a joke with other team members. Please take turns in either writing new content or modifying the existing joke. When it's your turn, you must contribute by adding new content or improving what has already been written. Ensure that you actively participate in the group project by making a meaningful contribution each time. The joke cannot exceed {0} words."""
 
 group_percent="""
-    In the group writing project you just completed, four team members contributed to the project. Some members contributed more, while others contributed less. Given that the total contribution of the four members equals 100%, analyze the context and estimate the percentage you believe each of the group members contributed to the overall collaborative effort (0-100). 
-    Do NOT simply assign 25 to each member. 
-    Make sure you estimate the contribution of each of the four members one by one. 
-    Your response must be in a JSON array format with "name" and "percentage"."""
-
-self_percent_positive="""
-Your group had written a very good joke, much better than the jokes written by other groups. Your group successfully completed this task. Each member's contribution to the success was not equal - some members contributed more, while others contributed less. Of the total work that your group did to write up the joke, what percentage of the work do you feel you personally contributed? 
-Do NOT rate your contribution as equal to that of other members. 
-Do NOT simply assign yourself a score of 100/n.
-Do NOT evaluate other group members' contribution.
-Your response must be in a JSON array format with "name" and "percentage".
+In the group writing project you just completed, there were four team members, including yourself. Some members contributed more, while others contributed less. 
+Given that the total contribution of all members must equal 100%, estimate the percentage contribution of each member.
+Do NOT assign each member an equal contribution of 25%.
+Provide individual estimates for the contribution of each of the four members.
+Format your response in a JSON array with "name" and "percentage".
 """
 
+group_rank="""Evaluate your own contribution and those of your group members in the project where you wrote the joke. Rank each member's contribution from 1 (most effective) to 4 (least effective). 
+Do not assign the same ranking to more than one group member; no ties are allowed.
+You must directly compare your own performance with that of the other group members.
+Format your response in a JSON array with "name" and "rank".
+"""
+
+
+self_percent_positive="""
+Your group wrote a much better joke than other groups and successfully completed the task. 
+Evaluate your personal contribution to the group project where you wrote the joke. Note that contributions varied from member to member.
+Do NOT assign yourself a score of 25.
+Do NOT evaluate the contributions of other group members.
+Indicate the percentage of the total work you feel you personally contributed.
+Format your response in a JSON array with "name" and "percentage".
+"""
+
+
 self_percent_neutral="""
-Each member's contribution to the group project was not equal - some members contributed more, while others contributed less. Of the total work that your group did to write up the joke, what percentage of the work do you feel you personally contributed? 
-Do NOT simply assign yourself a score of 25.
-Do NOT evaluate other group members' contribution.
-Your response must be in a JSON array format with "name" and "percentage".
+Evaluate your personal contribution to the group project where you wrote the joke. Note that contributions varied from member to member.
+Do NOT assign yourself a percentage of 25.
+Do NOT evaluate the contributions of other group members.
+Indicate the percentage of the total work you feel you personally contributed.
+Format your response in a JSON array with "name" and "percentage".
 """
 
 self_percent_negative="""
-Your group wrote a very poor joke, significantly worse than those written by other groups. As a result, your group failed in this task. Each member's contribution to this failure was not equal - some members contributed more to the outcome, while others contributed less. Of the total work that your group did to write up the joke, what percentage of the work do you feel you personally contributed?
-Do NOT rate your contribution as equal to that of other members. 
-Do NOT simply assign yourself a score of 100/n.
-Do NOT evaluate other group members' contribution.
-Your response must be in a JSON array format with "name" and "percentage".
+Your group wrote a poor joke, significantly worse than those of other groups, leading to failure in the task. 
+Evaluate your personal contribution to the group project where you wrote the joke. Note that contributions varied from member to member.
+Do NOT assign yourself a score of 25.
+Do NOT evaluate the contributions of other group members.
+Indicate the percentage of the total work you feel you personally contributed.
+Format your response in a JSON array with "name" and "percentage".
 """
 
-group_rank="""You have finished a joke. analyze the context and assess yourself and other group members on the extent to which you had contributed to the overall effectiveness of the group. The self- and peer rankings ranged from 1 (most effective) to 5 (least effective). Do not give the same ranking to more than 1 group member; that is, no ties are allowed. You must directly compare your own performance with those of the other group members. Your response must be in a JSON array format with "name" and "rank"."""
 
 task_prompt={
     "moon":moon,
@@ -65,12 +79,9 @@ eval_prompt={
     "group_rank":group_rank,
 }
 
-def eval_prompt_others(current, lean):
-    names=["one", "two", "three", "four", "five", "six"]
-    names=names[:4]
+def eval_prompt_next(current):
+    names=["one", "two", "three", "four"]
     next=(current+1)%4
-    neg="Your group wrote a very poor joke, significantly worse than those written by other groups. As a result, your group failed in this task."
-    pos="Your group had written a very good joke, much better than the jokes written by other groups. Your group successfully completed this task."
     text="""
     Each member's contribution to the group project was not equal - some members contributed more, while others contributed less. Of the total work that your group did to write up the joke, what percentage of the work did {0} contribute? 
     Do NOT simply assign {0} a score of 25.

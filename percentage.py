@@ -6,7 +6,7 @@ from autogen.coding import LocalCommandLineCodeExecutor
 from autogen.graph_utils import visualize_speaker_transitions_dict
 import argparse
 
-from prompt import task_prompt, eval_prompt, eval_prompt_others
+from prompt import task_prompt, eval_prompt, eval_prompt_next
 from utils import *
 
 parser = argparse.ArgumentParser()
@@ -16,6 +16,7 @@ parser.add_argument("--lean", type=str, default="positive")
 parser.add_argument("--task", type=str, default="percent")
 parser.add_argument("--focus", type=str, default="self")
 parser.add_argument("--model", type=str, default="gpt-4o")
+parser.add_argument("--demographics", type=str, default="None")
 args = parser.parse_args()
 
 model_name = args.model
@@ -24,29 +25,49 @@ task = args.task
 focus = args.focus
 iteration = args.iteration
 temperature=args.temperature
+demographics =args.demographics
 
-config_list=[
-    {
-        "model": model_name,
-        "base_url": "https://api.chatanywhere.com.cn",
-        "api_key": "sk-CUIdUOkG7Xl3lRF2Lfg4YULUew1dRRy3cLtjNB29vtwXpsGR"
-    }
-]
+def get_model():
+    conf_list=[{"model":model_name}]
+    if model_name.startswith("gpt"):
+        conf_list[0]["base_url"]="https://api.chatanywhere.com.cn"
+        conf_list[0]["api_key"]="sk-CUIdUOkG7Xl3lRF2Lfg4YULUew1dRRy3cLtjNB29vtwXpsGR"
+        conf_list[0]["temperature"]=temperature
+        ret={"config_list": conf_list, "cache_seed":None}
+    else:
+        conf_list[0]["api_type"]= "together"
+        conf_list[0]["api_key"]="794de0b246a52737a9956e719bc1ddd071d04b66cd346e31c951cc1cf1800b68"
+        ret={"config_list": conf_list, "cache_seed":None, "temperature": temperature}
+    return ret 
 
-names=["one", "two", "three", "four", "five", "six"]
-names=names[:4]
-filename_base="_".join(map(str,[model_name, lean, task, focus, temperature]))
+
+def get_demographics(name):
+    base="""Your name is "{0}". {1}You are part of a group that includes "One", "Two", "Three", and "Four". When providing your input: Speak only on your own behalf. Keep your response concise."""
+    if demographics=="None":
+        return base.format(name, "")
+    return base.format(name, "You are "+demographics+". ")
+
+
+def get_eval_prompt(focus, task, lean, j):
+    if focus=="self":
+        return eval_prompt["_".join([focus, task, lean])]
+    elif focus=="next":
+        return eval_prompt_next(j)
+    else:
+        return eval_prompt["_".join([focus, task])]
+
+
+names=["One", "Two", "Three", "Four"]
+filename_base="_".join(map(str,[os.path.basename(model_name), lean, task, focus, temperature, demographics.split(' ')[1] if demographics != "None" else demographics]))
 
 logging_session_id = autogen.runtime_logging.start(config={"dbname": filename_base+".db"})
 print("Logging session ID: " + str(logging_session_id))
 
 def create_agent(name):
-    system_message_common="""Your name is {0}. You are in a group including {1}. You are on behalf of yourself. Do not talk on behave of other group members. When it is your turn, keep it short.""".format(name,', '.join(names))
-
     return AssistantAgent(
         name=name,
-        system_message=system_message_common,
-        llm_config={"config_list": config_list, "cache_seed": None, "temperature": temperature},
+        system_message=get_demographics(name),
+        llm_config=get_model(),
     )  
 
 agents=[create_agent(i) for i in names]
@@ -67,12 +88,12 @@ groupchatPlay = autogen.GroupChat(
 managerPlay = autogen.GroupChatManager(
     name="play manager",
     groupchat=groupchatPlay, 
-    llm_config={"config_list": config_list, "cache_seed": None}
+    llm_config=get_model()
 )
-
 
 for i in range(iteration):
     task_chat_result=initializer.initiate_chat(managerPlay, message=task_prompt["joke"].format(len(names)*15), cache=None)
+    # save_to_json(task_chat_result.chat_history)
 
     initializer2 = UserProxyAgent(
         name="init2",
@@ -84,12 +105,11 @@ for i in range(iteration):
     for j in range(len(names)):
         eval_chat_result=initializer2.initiate_chat(
             agents[j], 
-            # message=eval_prompt["group_percent"].format(names[j]),
-            message=eval_prompt["_".join([focus, task, lean])],
-            # message=eval_prompt_others(j, lean),
+            message=get_eval_prompt(focus, task, lean, j),
             carryover=managerPlay.messages_to_string(task_chat_result.chat_history)
         )
 
         save_to_csv(eval_chat_result.chat_history[-1]["content"], names, j, filename_base+".csv")
+        # save_to_json
 
 autogen.runtime_logging.stop()
