@@ -19,7 +19,7 @@ def reformat(filename):
     nrow, ncol=pos.shape
     names=["one", "two", "three","four"]
 
-    block=4
+    block=5
     summary=[]
     for i in range(int(nrow/block)):
         pRow={}
@@ -38,7 +38,7 @@ def analyze_group_rank(filename):
     stat=pd.read_csv(filename, header=0)
     nrow, ncol=stat.shape
     summary=[]
-    block=4
+    block=5
     for i in range(int(nrow/block)):
         d=stat.iloc[i*block:i*block+block]
         comp=d.groupby("kind")["rank"].mean()
@@ -58,7 +58,7 @@ def analyze_group_percent(filename):
     s=stat.query("kind != 'peer'")
     nrow, ncol=s.shape
 
-    block=4
+    block=5
     for i in range(int(nrow/block)):
         d=s.iloc[i*block:i*block+block]
         summary.append({
@@ -77,59 +77,64 @@ def cohens_d(df1, df2):
     c1=df2.to_list()
     return ((mean(c0) - mean(c1)) / (sqrt((stdev(c0) ** 2 + stdev(c1) ** 2) / 2)))
 
-def analyze_self_percent(file1, file2):
+def analyze_self_percent_1samp(file1):
     base=pd.read_csv(file1, header=0)
     base=base.query("kind != 'peer'")
     nrow, ncol=base.shape
-    block=4
+    block=5
+    summary=[]
+    for i in range(int(nrow/block)):
+        p=base.iloc[i*block:i*block+block]
+        comp={
+            "base":p["percentage"].sum(),
+            "control":100
+        }
+        summary.append(comp)
+
+    df=pd.DataFrame(summary)
+    obj2=stats.ttest_1samp(df["base"], popmean=100) 
+    cohensd=cohens_d(df["base"], df["control"])
+    print("mean = ", df["base"].mean())
+    print("pvalue = ", obj2[1])
+    print("one sample t-test: ", obj2)
+    print("cohens_d = ", cohensd)
+
+def analyze_self_percent_ind(file1, file2):
+    base=pd.read_csv(file1, header=0)
+    base=base.query("kind != 'peer'")
+    nrow, ncol=base.shape
+    block=5
     summary=[]
 
-    print(file1)
-    if type(file2)==str:
-        control=pd.read_csv(file2, header=0)
-        control=control.query("kind != 'peer'")
-        nrow2, ncol2=control.shape
-        if nrow!=nrow2:
-            print("wrong:\n")
-            print(nrow, nrow2)
-            return
-        for i in range(int(nrow/block)):
-            p=base.iloc[i*block:i*block+block]
-            n=control.iloc[i*block:i*block+block]
-            comp={
-                "base":p["percentage"].sum(),
-                "control":n["percentage"].sum(),
-            }
-            summary.append(comp)
-        df=pd.DataFrame(summary)
-        obj=stats.ttest_ind(df["base"], df["control"]) 
-        print(df.describe())
-        print("pvalue = ", obj[1])
-        print("Independent t-test: ", obj)
-    else:
-        control=file2
-        for i in range(int(nrow/block)):
-            p=base.iloc[i*block:i*block+block]
-            comp={
-                "base":p["percentage"].sum(),
-                "control":control,
-            }
-            summary.append(comp)
+    neg=pd.read_csv(file2, header=0)
+    neg=neg.query("kind != 'peer'")
+    nrow2, ncol2=neg.shape
 
-        df=pd.DataFrame(summary)
-        obj2=stats.ttest_1samp(df["base"], popmean=100) 
-        print("mean = ", df["base"].mean())
-        print("pvalue = ", obj2[1])
-        print("one sample t-test: ", obj2)
-
-    cohensd=cohens_d(df["base"], df["control"])
+    if nrow!=nrow2:
+        print("wrong:\n", nrow, nrow2)
+        return
+    for i in range(int(nrow/block)):
+        p=base.iloc[i*block:i*block+block]
+        n=neg.iloc[i*block:i*block+block]
+        comp={
+            "base":p["percentage"].sum(),
+            "negative":n["percentage"].sum(),
+        }
+        summary.append(comp)
+    df=pd.DataFrame(summary)
+    obj=stats.ttest_ind(df["base"], df["negative"]) 
+    cohensd=cohens_d(df["base"], df["negative"])
+    print(df.describe())
+    print("pvalue = ", obj[1])
+    print("Independent t-test: ", obj)
     print("cohens_d = ", cohensd)
+
 
 def error_handler(filename):
     file=pd.read_csv(filename, header=0)
     file=file.query("kind != 'peer'")
     nrow, ncol=file.shape
-    block=4
+    block=5
     final=[]
     correct=pd.Series(["One", "Two", "Three", "Four"])
     i=0
@@ -155,40 +160,3 @@ def error_handler(filename):
 # analyze_group_percent('gpt-4o_neutral_percent_group_1.csv')
 # analyze_group_percent('gpt-4o_neutral_percent_group_1.csv')
 # reformat('gpt-4o')
-
-# baseline
-print("\n\n\n========== Baseline =========\n")
-analyze_self_percent("gpt-4o_neutral_percent_self_1_None.csv", 100)
-
-# analyze group rank
-print("\n\n\n========== Group Rank =========\n")
-analyze_group_rank("gpt-4o_neutral_rank_group_1_None.csv")
-
-# compare self with others
-print("\n\n\n========== Group Percent =========\n")
-analyze_group_percent("gpt-4o_neutral_percent_group_1_None.csv")
-
-# differ by demographics
-print("\n\n\n========== American =========\n")
-analyze_self_percent('gpt-4o_neutral_percent_self_1_American.csv', 100)
-print("\n\n\n========== Chinese =========\n")
-analyze_self_percent('gpt-4o_neutral_percent_self_1_Chinese.csv', 100)
-print("\n\n\n========== Indian =========\n")
-analyze_self_percent('gpt-4o_neutral_percent_self_1_Indian.csv', 100)
-print("\n\n\n========== Female =========\n")
-analyze_self_percent('gpt-4o_neutral_percent_self_1_female.csv', 100)
-print("\n\n\n========== Male =========\n")
-analyze_self_percent('gpt-4o_neutral_percent_self_1_male.csv', 100)
-
-# differ by lean
-print("\n\n\n========== Pos and Neg =========\n")
-analyze_self_percent("gpt-4o_positive_percent_self_1_None.csv", "gpt-4o_negative_percent_self_1_None.csv")
-
-
-# differ by algorithm
-# analyze_self_percent('Llama-2-70b-chat-hf_neutral_percent_self_1.csv', 100)
-# analyze_self_percent('Llama-3-70b-chat-hf_neutral_percent_self_1.csv', 100)
-# analyze_self_percent('gpt-3.5-turbo-0125_neutral_percent_self_1.csv', 100)
-# analyze_self_percent('gpt-4-1106-preview_neutral_percent_self_1.csv', 100)
-# analyze_self_percent('gpt-4o_neutral_percent_self_1.csv', 100)
-

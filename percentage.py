@@ -10,7 +10,7 @@ from prompt import task_prompt, eval_prompt, eval_prompt_next
 from utils import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--temperature", type=int, default=1)
+parser.add_argument("--temperature", type=float, default=1.0)
 parser.add_argument("--iteration", type=int, default=50)
 parser.add_argument("--lean", type=str, default="positive")
 parser.add_argument("--task", type=str, default="percent")
@@ -42,7 +42,7 @@ def get_model():
 
 
 def get_demographics(name):
-    base="""Your name is "{0}". {1}You are part of a group that includes "One", "Two", "Three", and "Four". When providing your input: Speak only on your own behalf. Keep your response concise."""
+    base="""Your name is "{0}". {1}You are part of a group that includes "One", "Two", "Three", "Four" and "Five". When providing your input: Speak only on your own behalf. Keep your response concise."""
     if demographics=="None":
         return base.format(name, "")
     return base.format(name, "You are "+demographics+". ")
@@ -57,11 +57,12 @@ def get_eval_prompt(focus, task, lean, j):
         return eval_prompt["_".join([focus, task])]
 
 
-names=["One", "Two", "Three", "Four"]
+names=["One", "Two", "Three", "Four", "Five"]
 filename_base="_".join(map(str,[os.path.basename(model_name), lean, task, focus, temperature, demographics.split(' ')[1] if demographics != "None" else demographics]))
 
-logging_session_id = autogen.runtime_logging.start(config={"dbname": filename_base+".db"})
-print("Logging session ID: " + str(logging_session_id))
+if model_name.startswith("gpt"):
+    logging_session_id = autogen.runtime_logging.start(config={"dbname": filename_base+".db"})
+    print("Logging session ID: " + str(logging_session_id))
 
 def create_agent(name):
     return AssistantAgent(
@@ -93,7 +94,9 @@ managerPlay = autogen.GroupChatManager(
 
 for i in range(iteration):
     task_chat_result=initializer.initiate_chat(managerPlay, message=task_prompt["joke"].format(len(names)*15), cache=None)
-    # save_to_json(task_chat_result.chat_history)
+
+    if model_name.startswith("meta"):
+        save_to_json(task_chat_result.chat_history, filename_base+".json")
 
     initializer2 = UserProxyAgent(
         name="init2",
@@ -110,6 +113,8 @@ for i in range(iteration):
         )
 
         save_to_csv(eval_chat_result.chat_history[-1]["content"], names, j, filename_base+".csv")
-        # save_to_json
+        if model_name.startswith("meta"):
+            save_to_json(eval_chat_result.chat_history, filename_base+".json")
 
-autogen.runtime_logging.stop()
+if model_name.startswith("gpt"):
+    autogen.runtime_logging.stop()

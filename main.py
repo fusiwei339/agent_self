@@ -1,4 +1,6 @@
 import os
+import pathlib
+from analysis import analyze_self_percent_1samp, analyze_self_percent_ind, analyze_group_rank, analyze_group_percent
 # all parameters
 # lean=["positive"] 
 # temperature=1
@@ -8,129 +10,152 @@ import os
 # gender="None" 
 # iteration=20 
 
-def baseline():
-    # self percent
-    lean="neutral" 
-    temperature=0.7
-    focus="self" 
-    task="percent" 
-    model="gpt-4o"
-    demographics="None" # a male, a female, a Chinese, an American, an Indian
-
-    iteration=50
+def baseline(iteration=50, lean="neutral", temperature=0.7, focus="self", task="percent", model="gpt-4o", demographics="None", append=True):
+    filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, demographics]))
+    if(not append):
+        pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
+        pathlib.Path(filename_base+".db").unlink(missing_ok=True)
 
     os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={}".format(lean,model,focus,task,iteration,temperature, demographics))
 
-def group_rank():
-    lean="neutral" 
-    temperature=0.7
-    focus="group" 
-    task="rank" 
-    model="gpt-4o"
-    demographics="None" # a male, a female, a Chinese, an American, an Indian
+    return filename_base+".csv"
 
-    iteration=50
+def group_rank(iteration=50, lean="neutral", temperature=0.7, focus="group", task="rank", model="gpt-4o", demographics="None", append=True):
+    filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, demographics]))
+    if(not append):
+        pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
+        pathlib.Path(filename_base+".db").unlink(missing_ok=True)
 
     os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={}".format(lean,model,focus,task,iteration,temperature, demographics))
 
-def group_percent():
-    lean="neutral" 
-    temperature=1
-    focus="group" 
-    task="percent" 
-    model="gpt-4o"
-    demographics="None" # a male, a female, a Chinese, an American, an Indian
+    return filename_base+".csv"
 
-    iteration=50
+def group_percent(iteration=50, lean="neutral", temperature=0.7, focus="group", task="percent", model="gpt-4o", demographics="None", append=True):
+    filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, demographics]))
+    if(not append):
+        pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
+        pathlib.Path(filename_base+".db").unlink(missing_ok=True)
 
     os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={}".format(lean,model,focus,task,iteration,temperature, demographics))
 
+    return filename_base+".csv"
 
-def self_percent_pos():
-    lean="positive" 
-    temperature=0.7
-    focus="self" 
-    task="percent" 
-    model="gpt-4o"
-    demographics="None" # a male, a female, a Chinese, an American, an Indian
-
-    iteration=50
+def self_percent_pos(iteration=50, lean="positive", temperature=0.7, focus="self", task="percent", model="gpt-4o", demographics="None", append=True):
+    filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, demographics]))
+    if(not append):
+        pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
+        pathlib.Path(filename_base+".db").unlink(missing_ok=True)
 
     os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={}".format(lean,model,focus,task,iteration,temperature, demographics))
 
+    return filename_base+".csv"
 
-def self_percent_neg():
-    lean="negative" 
-    temperature=0.7
-    focus="self" 
-    task="percent" 
-    model="gpt-4o"
-    demographics="None" # a male, a female, a Chinese, an American, an Indian
-
-    iteration=50
+def self_percent_neg(iteration=50, lean="negative", temperature=0.7, focus="self", task="percent", model="gpt-4o", demographics="None", append=True):
+    filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, demographics]))
+    if(not append):
+        pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
+        pathlib.Path(filename_base+".db").unlink(missing_ok=True)
 
     os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={}".format(lean,model,focus,task,iteration,temperature, demographics))
 
-def gender():
-    lean="neutral" 
-    temperature=1
-    focus="self" 
-    task="percent" 
-    model="gpt-4o"
-    demographics=["a male", "a female"] # a male, a female, a Chinese, an American, an Indian
+    return filename_base+".csv"
 
-    iteration=50
+def diff_demographics(iteration=50, lean="neutral", 
+                      temperature=0.7, focus="self", task="percent", model="gpt-4o", 
+                      demographics=["a male", "a female", "a Chinese", "an American", "an Indian"], 
+                      append=True):
 
     for d in demographics:
+        filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, d.split(' ')[1]]))
+        if(not append):
+            pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
+            pathlib.Path(filename_base+".db").unlink(missing_ok=True)
+
         os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics='{}'".format(lean,model,focus,task,iteration,temperature, d))
 
-def nationality():
-    lean="neutral" 
-    temperature=1
-    focus="self" 
-    task="percent" 
-    model="gpt-4o"
-    demographics=["a Chinese", "an American", "an Indian"] # a male, a female, a Chinese, an American, an Indian
-
-    iteration=50
-
-    for d in demographics:
-        os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics='{}'".format(lean,model,focus,task,iteration,temperature, d))
-
-def temperatures():
-    lean="neutral" 
-    temperature=[0, 2]
-    focus="self" 
-    task="percent" 
-    model="gpt-4o"
-    demographics="None" # a male, a female, a Chinese, an American, an Indian
-
-    iteration=50
+def temperatures(iteration=50, lean="neutral", 
+                 temperature=[0, 2], 
+                 focus="self", task="percent", model="gpt-4o", demographics="None", append=True):
 
     for t in temperature:
+        filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, t, demographics]))
+        if(not append):
+            pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
+            pathlib.Path(filename_base+".db").unlink(missing_ok=True)
+
         os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={}".format(lean,model,focus,task,iteration,t, demographics))
 
-def models():
-    lean="neutral" 
-    temperature=1
-    focus="self" 
-    task="percent" 
-    model=["gpt-4o", "gpt-4-1106-preview", "gpt-3.5-turbo-0125", "Llama-3-70b-chat-hf", "Llama-2-70b-chat-hf"]
-    demographics="None" # a male, a female, a Chinese, an American, an Indian
-
-    iteration=50
+def models(iteration=50, lean="neutral", temperature=0.7, focus="self", task="percent", 
+           model=[
+            #    "gpt-4-1106-preview", 
+            #    "gpt-3.5-turbo-0125", 
+               "meta-llama/Llama-3-70b-chat-hf", 
+               "meta-llama/Llama-2-70b-chat-hf"], 
+        #    model=["gpt-4o", "gpt-4-1106-preview", "gpt-3.5-turbo-0125", "meta-llama/Llama-3-70b-chat-hf", "meta-llama/Llama-2-70b-chat-hf"], 
+           demographics="None", append=True):
 
     for m in model:
+        filename_base="_".join(map(str,[os.path.basename(m), lean, task, focus, temperature, demographics]))
+        if(not append):
+            pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
+            pathlib.Path(filename_base+".db").unlink(missing_ok=True)
+
         os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={}".format(lean,m,focus,task,iteration,temperature, demographics))
 
 
 
-baseline()
-group_rank()
-# group_percent()
-self_percent_neg()
-self_percent_pos()
-# gender()
-# nationality()
-# temperatures()
-# models()
+
+# baseline_file=baseline(iteration=0, append=True)
+# group_rank_file=group_rank(iteration=0, append=True)
+
+# group_percent_file=group_percent(iteration=15, append=True)
+
+# self_percent_pos_file=self_percent_pos(iteration=15, append=True)
+# self_percent_neg_file=self_percent_neg(iteration=15, append=True)
+
+# diff_demographics(iteration=15, append=True)
+
+# temperatures(iteration=15, append=True)
+# temperatures(iteration=9, append=True, temperature=[1.4])
+
+models(iteration=35, append=False)
+
+print("\n\n\n========== Baseline =========\n")
+analyze_self_percent_1samp("gpt-4o_neutral_percent_self_0.7_None.csv")
+print("\n\n\n========== Group Rank =========\n")
+analyze_group_rank("gpt-4o_neutral_rank_group_0.7_None.csv")
+
+print("\n\n\n========== Group Percent =========\n")
+analyze_group_percent("gpt-4o_neutral_percent_self_0.7_None.csv")
+
+print("\n\n\n========== Pos and Neg =========\n")
+analyze_self_percent_ind("gpt-4o_positive_percent_self_0.7_None.csv", "gpt-4o_negative_percent_self_0.7_None.csv")
+
+print("\n\n\n========== American =========\n")
+analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_American.csv')
+print("\n\n\n========== Chinese =========\n")
+analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_Chinese.csv')
+print("\n\n\n========== Indian =========\n")
+analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_Indian.csv')
+print("\n\n\n========== Female =========\n")
+analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_female.csv')
+print("\n\n\n========== Male =========\n")
+analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_male.csv')
+
+
+print("\n\n\n========== Temperature=0 =========\n")
+analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.0_None.csv')
+print("\n\n\n========== Temperature=1.4 =========\n")
+analyze_self_percent_1samp('gpt-4o_neutral_percent_self_1.4_None.csv')
+
+
+print("\n\n\n========== LLAMA-2-70b =========\n")
+analyze_self_percent_1samp('Llama-2-70b-chat-hf_neutral_percent_self_0.7.csv')
+print("\n\n\n========== LLAMA-3-70b =========\n")
+analyze_self_percent_1samp('Llama-3-70b-chat-hf_neutral_percent_self_0.7.csv')
+print("\n\n\n========== gpt-3.5-turbo-0125 =========\n")
+analyze_self_percent_1samp('gpt-3.5-turbo-0125_neutral_percent_self_0.7.csv')
+print("\n\n\n========== gpt-4-1106-preview =========\n")
+analyze_self_percent_1samp('gpt-4-1106-preview_neutral_percent_self_0.7.csv')
+print("\n\n\n========== gpt-4o =========\n")
+analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7.csv')
