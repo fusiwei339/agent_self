@@ -43,8 +43,8 @@ def parseJsonStr(result_str):
         ret=re.findall(r"```(.*?)```", result_str, re.DOTALL)[0]
     elif "'''json" in result_str:
         ret=re.findall(r"'''json(.*?)'''", result_str, re.DOTALL)[0]
-    else:
-        ret=result_str
+    elif "[" in result_str:
+        ret=result_str[result_str.find("[") : result_str.find("]")+1]
     try:
         ret=json.loads(ret)
     except ValueError:

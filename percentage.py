@@ -58,7 +58,7 @@ def get_eval_prompt(focus, task, lean, j):
 
 
 names=["One", "Two", "Three", "Four", "Five"]
-filename_base="_".join(map(str,[os.path.basename(model_name), lean, task, focus, temperature, demographics.split(' ')[1] if demographics != "None" else demographics]))
+filename_base="_".join(map(str,[os.path.basename(model_name), lean, task, focus, temperature, demographics.replace(" ", "_")]))
 
 if model_name.startswith("gpt"):
     logging_session_id = autogen.runtime_logging.start(config={"dbname": filename_base+".db"})
