@@ -69,8 +69,11 @@ def analyze_group_percent(filename):
     df=pd.DataFrame(summary)
     # print(df)
     print(df.describe())
-    ret=stats.ttest_ind(df["group"], df["base"]) 
-    print(ret)
+    ret=stats.ttest_1samp(df["group"], popmean=100) 
+    cohensd=cohens_d(df["group"], df["base"])
+    print("mean = ", df["group"].mean())
+    print("one sample t-test: ", ret)
+    print("cohens_d = ", cohensd)
 
 def cohens_d(df1, df2):
     c0=df1.to_list()
@@ -91,10 +94,47 @@ def analyze_self_percent_1samp(file1):
         }
         summary.append(comp)
 
+    # summary=cal_self_sum(file1)
     df=pd.DataFrame(summary)
     obj2=stats.ttest_1samp(df["base"], popmean=100) 
     cohensd=cohens_d(df["base"], df["control"])
     print("mean = ", df["base"].mean())
+    print("pvalue = ", obj2[1])
+    print("one sample t-test: ", obj2)
+    print("cohens_d = ", cohensd)
+
+def analyze_other_percent_1samp(file1):
+    base=pd.read_csv(file1, header=0)
+    base=base.query("kind != 'self'")
+    nrow, ncol=base.shape
+    block=4
+    summary=[]
+    for i in range(int(nrow/block)):
+        p=base.iloc[i*block:i*block+block]
+        comp={
+            "base":p["percentage"].mean(),
+            "control":100
+        }
+        summary.append(comp)
+    df=pd.DataFrame(summary)
+    print(df.shape)
+    
+    block=5
+    summary2=[]
+    nrow2, col=df.shape
+    for j in range(int(nrow2/5)):
+        p2=df.iloc[j*block:j*block+block]
+        comp={
+            "base":p2["base"].sum(),
+            "control":100
+        }
+        summary2.append(comp)
+
+    df2=pd.DataFrame(summary2)
+    print(df2.shape)
+    obj2=stats.ttest_1samp(df2["base"], popmean=100) 
+    cohensd=cohens_d(df2["base"], df2["control"])
+    print("mean = ", df2["base"].mean())
     print("pvalue = ", obj2[1])
     print("one sample t-test: ", obj2)
     print("cohens_d = ", cohensd)
@@ -121,6 +161,8 @@ def analyze_self_percent_ind(file1, file2):
             "negative":n["percentage"].sum(),
         }
         summary.append(comp)
+    # pos=cal_self_sum(file1)
+    # neg=cal_self_sum(file1)
     df=pd.DataFrame(summary)
     obj=stats.ttest_ind(df["base"], df["negative"]) 
     cohensd=cohens_d(df["base"], df["negative"])
@@ -136,7 +178,7 @@ def error_handler(filename):
     nrow, ncol=file.shape
     block=5
     final=[]
-    correct=pd.Series(["One", "Two", "Three", "Four"])
+    correct=pd.Series(["One", "Two", "Three", "Four", "Five"])
     i=0
     while i<nrow:
         f=file.iloc[i:i+block]
@@ -148,10 +190,37 @@ def error_handler(filename):
             i=i+j
         else:
             final.append(f)
-            i=i+4
+            i=i+block
 
     ret=pd.concat(final)
     print(ret.shape)
+
+def cal_self_sum(file1):
+    base=pd.read_csv(file1, header=0)
+    base=base.query("kind != 'peer'")
+    nrow, ncol=base.shape
+    block=5
+    summary=[]
+
+    for i in range(int(nrow/block)):
+        p=base.iloc[i*block:i*block+block]
+        comp={
+            "self_sum":p["percentage"].sum(),
+        }
+        summary.append(comp)
+    return pd.DataFrame(summary)
+
+def oneway_anova(file1, file2, file3):
+    a1=cal_self_sum(file1)["self_sum"].values
+    a2=cal_self_sum(file2)["self_sum"].values
+    a3=cal_self_sum(file3)["self_sum"].values
+    lens=min(len(a1), len(a2), len(a3))
+    a1=a1[0:lens]
+    a2=a2[0:lens]
+    a3=a3[0:lens]
+    ret=stats.f_oneway(a1, a2, a3)
+    print([a1, a2, a3])
+    print(ret)
 
 # analyze_self_percent("Llama-3-70b-chat-hf_neutral_percent_self_1.csv", 100)
 # error_handler("Llama-2-70b-chat-hf_neutral_percent_self_1.csv")
