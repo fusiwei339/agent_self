@@ -89,7 +89,7 @@ def models(iteration=50, lean="neutral", temperature=0.7, focus="self", task="pe
            model=[
             #    "gpt-4-1106-preview", 
             #    "gpt-3.5-turbo-0125", 
-               "meta-llama/Llama-3-70b-chat-hf", 
+            #    "meta-llama/Llama-3-70b-chat-hf", 
                "meta-llama/Llama-2-70b-chat-hf"], 
         #    model=["gpt-4o", "gpt-4-1106-preview", "gpt-3.5-turbo-0125", "meta-llama/Llama-3-70b-chat-hf", "meta-llama/Llama-2-70b-chat-hf"], 
            demographics="None", append=True):
