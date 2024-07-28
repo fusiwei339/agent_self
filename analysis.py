@@ -161,6 +161,8 @@ def analyze_self_percent_ind(file1, file2):
             "negative":n["percentage"].sum(),
         }
         summary.append(comp)
+    # pos=cal_self_sum(file1)
+    # neg=cal_self_sum(file1)
     df=pd.DataFrame(summary)
     obj=stats.ttest_ind(df["base"], df["negative"]) 
     cohensd=cohens_d(df["base"], df["negative"])

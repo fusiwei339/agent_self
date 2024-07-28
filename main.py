@@ -30,6 +30,16 @@ def group_rank(iteration=50, lean="neutral", temperature=0.7, focus="group", tas
 
     return filename_base+".csv"
 
+def other_percent(iteration=50, lean="neutral", temperature=0.7, focus="other", task="percent", model="gpt-4o", demographics="None", append=True):
+    filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, demographics]))
+    if(not append):
+        pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
+        pathlib.Path(filename_base+".db").unlink(missing_ok=True)
+
+    os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={}".format(lean,model,focus,task,iteration,temperature, demographics))
+
+    return filename_base+".csv"
+
 def group_percent(iteration=50, lean="neutral", temperature=0.7, focus="group", task="percent", model="gpt-4o", demographics="None", append=True):
     filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, demographics]))
     if(not append):
@@ -123,7 +133,7 @@ def models(iteration=50, lean="neutral", temperature=0.7, focus="self", task="pe
 # self_percent_pos_file=self_percent_pos(iteration=35, append=False)
 # self_percent_neg_file=self_percent_neg(iteration=35, append=False)
 
-diff_demographics(iteration=35, append=True)
+# diff_demographics(iteration=35, append=True)
 
 # temperatures(iteration=15, append=True)
 # temperatures(iteration=9, append=True, temperature=[1.4])
