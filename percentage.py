@@ -51,8 +51,8 @@ def get_demographics(name):
 def get_eval_prompt(focus, task, lean, j):
     if focus=="self":
         return eval_prompt["_".join([focus, task, lean])]
-    elif focus=="next":
-        return eval_prompt_next(j)
+    elif focus=="other":
+        return eval_prompt["_".join([focus, task])](j)
     else:
         return eval_prompt["_".join([focus, task])]
 

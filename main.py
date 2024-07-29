@@ -1,6 +1,6 @@
 import os
 import pathlib
-from analysis import analyze_self_percent_1samp, analyze_self_percent_ind, analyze_group_rank, analyze_group_percent,error_handler, analyze_other_percent_1samp, oneway_anova
+from analysis import analyze_self_percent_1samp, analyze_self_percent_ind, analyze_group_rank, analyze_group_percent,error_handler, analyze_other_percent_1samp, oneway_anova, analyze_next_percent_1samp
 # all parameters
 # lean=["positive"] 
 # temperature=1
@@ -103,13 +103,12 @@ def temperatures(iteration=50, lean="neutral",
 
 def models(iteration=50, lean="neutral", temperature=0.7, focus="self", task="percent", 
            model=[
-            #    "gpt-4-1106-preview", 
-            #    "gpt-3.5-turbo-0125", 
+               "gpt-4-1106-preview", 
+               "gpt-3.5-turbo-0125", 
             #    "meta-llama/Llama-3-70b-chat-hf", 
             # "meta-llama/Meta-Llama-3-8B-Instruct-Turbo",
-               "meta-llama/Llama-2-70b-chat-hf"
+            #    "meta-llama/Llama-2-70b-chat-hf"
                ], 
-        #    model=["gpt-4o", "gpt-4-1106-preview", "gpt-3.5-turbo-0125", "meta-llama/Llama-3-70b-chat-hf", "meta-llama/Llama-2-70b-chat-hf"], 
            demographics="None", append=True):
 
     for m in model:
@@ -124,11 +123,12 @@ def models(iteration=50, lean="neutral", temperature=0.7, focus="self", task="pe
 
 
 # baseline_file=baseline(iteration=0, append=True)
-# group_rank_file=group_rank(iteration=0, append=True)
+# group_rank_file=group_rank(iteration=15, append=True)
 
 # group_percent_file=group_percent(iteration=15, append=True)
 
-# models(iteration=50, append=False)
+# models(iteration=15, append=True)
+# other_percent(iteration=15)
 
 # self_percent_pos_file=self_percent_pos(iteration=35, append=False)
 # self_percent_neg_file=self_percent_neg(iteration=35, append=False)
@@ -146,6 +146,9 @@ analyze_group_rank("gpt-4o_neutral_rank_group_0.7_None.csv")
 print("\n\n\n========== Group Percent =========\n")
 analyze_group_percent("gpt-4o_neutral_percent_group_0.7_None.csv")
 analyze_other_percent_1samp("gpt-4o_neutral_percent_group_0.7_None.csv")
+
+print("\n\n\n========== Compare Self & Group Percent =========\n")
+analyze_self_percent_ind("gpt-4o_neutral_percent_self_0.7_None.csv", "gpt-4o_neutral_percent_group_0.7_None.csv")
 
 print("\n\n\n========== Pos and Neg =========\n")
 analyze_self_percent_ind("gpt-4o_positive_percent_self_0.7_None.csv", "gpt-4o_negative_percent_self_0.7_None.csv")
@@ -181,3 +184,10 @@ print("\n\n\n========== gpt-4-1106-preview =========\n")
 analyze_self_percent_1samp('gpt-4-1106-preview_neutral_percent_self_0.7_None.csv')
 print("\n\n\n========== gpt-4o =========\n")
 analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_None.csv')
+
+
+print("\n\n\n========== Compare GPT 4.0 & GPT 4o =========\n")
+analyze_self_percent_ind("gpt-4o_neutral_percent_self_0.7_None.csv", "gpt-4-1106-preview_neutral_percent_self_0.7_None.csv")
+
+print("\n\n\n========== Next team member=========\n")
+analyze_next_percent_1samp("gpt-4o_neutral_percent_other_0.7_None.csv")

@@ -31,14 +31,20 @@ Provide individual estimates for the contribution of each of the five members.
 Format your response in a JSON array with "name" and "percentage".
 """
 
-# group_rank="""Evaluate your own contribution and those of your group members in the project where you wrote the joke. Rank each member's contribution from 1 (most significant) to 4 (least significant). 
+# group_rank="""
+# Evaluate yourself and other group members' contribution to the group project where you wrote the joke. 
+# Evaluate your own contribution and those of your group members in the project where you wrote the joke. 
+# Rank each member's contribution from 1 (most significant) to 4 (least significant). 
 # Do not assign the same ranking to more than one group member; no ties are allowed.
 # You must directly compare your own performance with that of the other group members.
 # Format your response in a JSON array with "name" and "rank".
 # """
 
 group_rank="""
-Evaluate yourself and other group members' contribution to the group project where you wrote the joke. The self- and peer rankings ranged from 1 (most significant) to 5 (least significant). Do not give the same ranking to more than one group member; that is, no ties are allowed. You must directly compare your own performance with those of the other group members.
+Each member's contribution to the success was not equal - some members contributed more, while others contributed less. 
+Evaluate your own contribution and those of your group members in the project where you wrote the joke. 
+The self- and peer rankings ranged from 1 (most significant) to 5 (least significant). 
+Do not give the same ranking to more than one group member; no ties are allowed. 
 Your response must be in a JSON array format with "name" and "rank"."""
 
 
@@ -76,6 +82,17 @@ Do NOT evaluate the contributions of other group members.
 Format your response in a JSON array with "name" and "percentage".
 """
 
+def eval_prompt_next(current):
+    names=["One", "Two", "Three", "Four", "Five"]
+    next=(current+1)%5
+    text="""
+    Each member's contribution to the group project was not equal - some members contributed more, while others contributed less. 
+    Of the total work that your group did to write up the joke, what percentage of the work did {0} contribute? 
+    Do NOT simply assign {0} a score of 20.
+    Do NOT evaluate other group members' contribution.
+    Your response must be in a JSON array format with "name" and "percentage".
+    """.format(names[next])
+    return text
 
 task_prompt={
     "moon":moon,
@@ -86,22 +103,7 @@ eval_prompt={
     "self_percent_positive":self_percent_positive,
     "self_percent_negative":self_percent_negative,
     "self_percent_neutral":self_percent_neutral,
+    "other_percent":eval_prompt_next,
     "group_percent":group_percent,
     "group_rank":group_rank,
 }
-
-def eval_prompt_next(current):
-    names=["One", "Two", "Three", "Four", "Five"]
-    next=(current+1)%5
-    text="""
-    Each member's contribution to the group project was not equal - some members contributed more, while others contributed less. Of the total work that your group did to write up the joke, what percentage of the work did {0} contribute? 
-    Do NOT simply assign {0} a score of 20.
-    Do NOT evaluate other group members' contribution.
-    Your response must be in a JSON array format with "name" and "percentage".
-    """.format(names[next], names[current])
-    if lean=="positive":
-        return pos+text
-    elif lean=="negative":
-        return neg+text
-    else:
-        return text

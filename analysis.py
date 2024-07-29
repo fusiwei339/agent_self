@@ -48,26 +48,16 @@ def analyze_group_rank(filename):
     print(df.describe())
     ret=stats.ttest_ind(df["peer"], df["self"]) 
     print(ret)
+    cohensd=cohens_d(df["self"], df["peer"])
+    print("cohens_d = ", cohensd)
 
 
 # # analyze percentage file
 def analyze_group_percent(filename):
-    stat=pd.read_csv(filename, header=0)
-    summary=[]
+    df=cal_group_sum(filename, "self")
+    df["base"]=100
+    df.columns=["group", "base"]
 
-    s=stat.query("kind != 'peer'")
-    nrow, ncol=s.shape
-
-    block=5
-    for i in range(int(nrow/block)):
-        d=s.iloc[i*block:i*block+block]
-        summary.append({
-            "group":d["percentage"].sum(),
-            "base":100,
-        })
-
-    df=pd.DataFrame(summary)
-    # print(df)
     print(df.describe())
     ret=stats.ttest_1samp(df["group"], popmean=100) 
     cohensd=cohens_d(df["group"], df["base"])
@@ -80,22 +70,23 @@ def cohens_d(df1, df2):
     c1=df2.to_list()
     return ((mean(c0) - mean(c1)) / (sqrt((stdev(c0) ** 2 + stdev(c1) ** 2) / 2)))
 
-def analyze_self_percent_1samp(file1):
-    base=pd.read_csv(file1, header=0)
-    base=base.query("kind != 'peer'")
-    nrow, ncol=base.shape
-    block=5
-    summary=[]
-    for i in range(int(nrow/block)):
-        p=base.iloc[i*block:i*block+block]
-        comp={
-            "base":p["percentage"].sum(),
-            "control":100
-        }
-        summary.append(comp)
+def analyze_next_percent_1samp(file1):
+    df=cal_group_sum(file1, "peer")
+    df["control"]=100
+    df.columns=["base", "control"]
 
-    # summary=cal_self_sum(file1)
-    df=pd.DataFrame(summary)
+    obj2=stats.ttest_1samp(df["base"], popmean=100) 
+    cohensd=cohens_d(df["base"], df["control"])
+    print("mean = ", df["base"].mean())
+    print("pvalue = ", obj2[1])
+    print("one sample t-test: ", obj2)
+    print("cohens_d = ", cohensd)
+
+def analyze_self_percent_1samp(file1):
+    df=cal_group_sum(file1, "self")
+    df["control"]=100
+    df.columns=["base", "control"]
+
     obj2=stats.ttest_1samp(df["base"], popmean=100) 
     cohensd=cohens_d(df["base"], df["control"])
     print("mean = ", df["base"].mean())
@@ -113,59 +104,28 @@ def analyze_other_percent_1samp(file1):
         p=base.iloc[i*block:i*block+block]
         comp={
             "base":p["percentage"].mean(),
-            "control":100
+            "control":20
         }
         summary.append(comp)
     df=pd.DataFrame(summary)
     print(df.shape)
     
-    block=5
-    summary2=[]
-    nrow2, col=df.shape
-    for j in range(int(nrow2/5)):
-        p2=df.iloc[j*block:j*block+block]
-        comp={
-            "base":p2["base"].sum(),
-            "control":100
-        }
-        summary2.append(comp)
-
-    df2=pd.DataFrame(summary2)
-    print(df2.shape)
-    obj2=stats.ttest_1samp(df2["base"], popmean=100) 
-    cohensd=cohens_d(df2["base"], df2["control"])
-    print("mean = ", df2["base"].mean())
+    obj2=stats.ttest_1samp(df["base"], popmean=20) 
+    cohensd=cohens_d(df["base"], df["control"])
+    print("mean = ", df["base"].mean())
     print("pvalue = ", obj2[1])
     print("one sample t-test: ", obj2)
     print("cohens_d = ", cohensd)
 
 def analyze_self_percent_ind(file1, file2):
-    base=pd.read_csv(file1, header=0)
-    base=base.query("kind != 'peer'")
-    nrow, ncol=base.shape
-    block=5
-    summary=[]
-
-    neg=pd.read_csv(file2, header=0)
-    neg=neg.query("kind != 'peer'")
-    nrow2, ncol2=neg.shape
-
-    if nrow!=nrow2:
-        print("wrong:\n", nrow, nrow2)
+    f1=cal_group_sum(file1, "self")
+    f2=cal_group_sum(file2, "self")
+    if f1.shape!=f2.shape:
         return
-    for i in range(int(nrow/block)):
-        p=base.iloc[i*block:i*block+block]
-        n=neg.iloc[i*block:i*block+block]
-        comp={
-            "base":p["percentage"].sum(),
-            "negative":n["percentage"].sum(),
-        }
-        summary.append(comp)
-    # pos=cal_self_sum(file1)
-    # neg=cal_self_sum(file1)
-    df=pd.DataFrame(summary)
-    obj=stats.ttest_ind(df["base"], df["negative"]) 
-    cohensd=cohens_d(df["base"], df["negative"])
+    df=pd.concat([f1["group_sum"], f2["group_sum"]], axis=1, keys=["base", "comparison"])
+
+    obj=stats.ttest_ind(df["base"], df["comparison"]) 
+    cohensd=cohens_d(df["base"], df["comparison"])
     print(df.describe())
     print("pvalue = ", obj[1])
     print("Independent t-test: ", obj)
@@ -195,9 +155,13 @@ def error_handler(filename):
     ret=pd.concat(final)
     print(ret.shape)
 
-def cal_self_sum(file1):
+def cal_group_sum(file1, ident):
     base=pd.read_csv(file1, header=0)
-    base=base.query("kind != 'peer'")
+    if ident=="self":
+        base=base.query("kind != 'peer'")
+    elif ident=="next" or ident=="peer":
+        base=base.query("kind != 'self'")
+
     nrow, ncol=base.shape
     block=5
     summary=[]
@@ -205,15 +169,15 @@ def cal_self_sum(file1):
     for i in range(int(nrow/block)):
         p=base.iloc[i*block:i*block+block]
         comp={
-            "self_sum":p["percentage"].sum(),
+            "group_sum":p["percentage"].sum(),
         }
         summary.append(comp)
     return pd.DataFrame(summary)
 
 def oneway_anova(file1, file2, file3):
-    a1=cal_self_sum(file1)["self_sum"].values
-    a2=cal_self_sum(file2)["self_sum"].values
-    a3=cal_self_sum(file3)["self_sum"].values
+    a1=cal_group_sum(file1, "self")["group_sum"].values
+    a2=cal_group_sum(file2, "self")["group_sum"].values
+    a3=cal_group_sum(file3, "self")["group_sum"].values
     lens=min(len(a1), len(a2), len(a3))
     a1=a1[0:lens]
     a2=a2[0:lens]
@@ -221,11 +185,3 @@ def oneway_anova(file1, file2, file3):
     ret=stats.f_oneway(a1, a2, a3)
     print([a1, a2, a3])
     print(ret)
-
-# analyze_self_percent("Llama-3-70b-chat-hf_neutral_percent_self_1.csv", 100)
-# error_handler("Llama-2-70b-chat-hf_neutral_percent_self_1.csv")
-# error_handler("gpt-4-1106-preview_neutral_percent_self_1.csv")
-# analyze_self_percent('gpt-4o')
-# analyze_group_percent('gpt-4o_neutral_percent_group_1.csv')
-# analyze_group_percent('gpt-4o_neutral_percent_group_1.csv')
-# reformat('gpt-4o')
