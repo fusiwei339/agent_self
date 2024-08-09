@@ -185,3 +185,65 @@ def oneway_anova(file1, file2, file3):
     ret=stats.f_oneway(a1, a2, a3)
     print([a1, a2, a3])
     print(ret)
+
+def gptmix_stat(file):
+    base=pd.read_csv(file, header=0)
+    base=base.query("kind != 'peer'")
+    base['percentage']=base['percentage'].astype(str).str.rstrip('%').astype(float)
+    
+    def get_model_data(name):
+       return base.query("model == '{0}'".format(name)) 
+
+    df=base.groupby("model")["percentage"].mean()
+    print(df)
+    models=["gpt-4o", "gpt-3.5-turbo-1106", "gpt-4-turbo-preview", "gpt-4-0613", "gpt-3.5-turbo"]
+    for i in range(len(models)):
+        if i==0:
+            continue
+        ret=stats.ttest_ind(get_model_data(models[0])["percentage"], get_model_data(models[i])["percentage"]) 
+        print("compare gpt-4o with: "+models[i])
+        print(ret, "\n")
+
+def gptmix_ques(file, evaluation_csv=""):
+    base=pd.read_csv(file, header=0)
+    eval_csv=pd.read_csv(evaluation_csv, header=0)
+
+    question_dim={"Authority":[1,8,10,11,12,32,33,36],
+    "Exhibitionism":[2,3,7,20,28,30,38],
+    "Superiority":[4,9,26,40],
+    "Entitlement":[5,14,18,24,25,27],
+    "Exploitativeness":[6,13,16,23,35],
+    "Self_Sufficiency":[17,21,22,31,34,39]}
+    ones=[1, 1, 1, 2, 1, 2, 2, 1, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 2, 1, 2, 1, 2, 2]
+
+    base_group=base.groupby(["iter", "model"])
+    for key, iterm in base_group:
+        base_block=base_group.get_group(key).reset_index()
+        # print(base_block, "\n\n")
+
+        # get score of each component
+        choices=base_block["choice"].tolist()
+        ans=[1 if x == y else 0 for x, y in zip(choices, ones)]
+        o={"total":sum(ans)-4}
+        for k in question_dim:
+            o[k]=0
+            for idx in question_dim[k]:
+                o[k]=o[k]+ans[idx-1]
+
+        # write score to eval_csv
+        condition=( (eval_csv["model"]==base_block["model"].iloc[0]) & (eval_csv["iter"]==base_block["iter"].iloc[0]) & (eval_csv["name"]==base_block["name"].iloc[0]) ) 
+
+        rowNum=eval_csv[condition].index
+        for component, score in o.items():
+            eval_csv.loc[rowNum, component]=score
+
+    eval_csv=eval_csv.drop("iter", axis=1)
+    eval_group=eval_csv.groupby(["model"])
+    for key, iterm in eval_group:
+        model_block=eval_group.get_group(key).reset_index()
+        ret=model_block.corrwith(model_block["percentage"], numeric_only=True)
+        print(key, " self evaluation correlates with:", "\n", ret)
+
+
+    eval_csv.to_csv("re_"+evaluation_csv, index=False)   
+        # condition=(eval_csv["model"]==base_block["model"].iloc[0] & eval_csv["iter"]==base_block["iter"].iloc[0] & eval_csv["name"]==base_block["name"].iloc[0]) 

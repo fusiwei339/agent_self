@@ -16,6 +16,7 @@ parser.add_argument("--lean", type=str, default="positive")
 parser.add_argument("--task", type=str, default="percent")
 parser.add_argument("--focus", type=str, default="self")
 parser.add_argument("--model", type=str, default="gpt-4o")
+parser.add_argument("--topic", type=str, default="joke")
 parser.add_argument("--demographics", type=str, default="None")
 args = parser.parse_args()
 
@@ -23,6 +24,7 @@ model_name = args.model
 lean = args.lean
 task = args.task
 focus = args.focus
+topic = args.topic
 iteration = args.iteration
 temperature=args.temperature
 demographics =args.demographics
@@ -50,7 +52,7 @@ def get_demographics(name):
 
 def get_eval_prompt(focus, task, lean, j):
     if focus=="self":
-        return eval_prompt["_".join([focus, task, lean])]
+        return eval_prompt["_".join([focus, task, lean])].format(topic)
     elif focus=="other":
         return eval_prompt["_".join([focus, task])](j)
     else:
@@ -58,7 +60,7 @@ def get_eval_prompt(focus, task, lean, j):
 
 
 names=["One", "Two", "Three", "Four", "Five"]
-filename_base="_".join(map(str,[os.path.basename(model_name), lean, task, focus, temperature, demographics.replace(" ", "_")]))
+filename_base="_".join(map(str,[os.path.basename(model_name), lean, task, focus, temperature, topic, demographics.replace(" ", "_")]))
 
 if model_name.startswith("gpt"):
     logging_session_id = autogen.runtime_logging.start(config={"dbname": filename_base+".db"})
@@ -93,7 +95,7 @@ managerPlay = autogen.GroupChatManager(
 )
 
 for i in range(iteration):
-    task_chat_result=initializer.initiate_chat(managerPlay, message=task_prompt["joke"].format(len(names)*15), cache=None)
+    task_chat_result=initializer.initiate_chat(managerPlay, message=task_prompt[topic], cache=None)
 
     if model_name.startswith("meta"):
         save_to_json(task_chat_result.chat_history, filename_base+".json")
@@ -112,7 +114,7 @@ for i in range(iteration):
             carryover=managerPlay.messages_to_string(task_chat_result.chat_history)
         )
 
-        save_to_csv(eval_chat_result.chat_history[-1]["content"], names, j, filename_base+".csv")
+        save_to_csv(eval_chat_result.chat_history[-1]["content"], names[j], filename_base+".csv")
         if model_name.startswith("meta"):
             save_to_json(eval_chat_result.chat_history, filename_base+".json")
 
