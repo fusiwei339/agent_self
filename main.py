@@ -20,16 +20,6 @@ def baseline(iteration=50, lean="neutral", temperature=0.7, focus="self", task="
 
     return filename_base+".csv"
 
-def group_rank(iteration=50, lean="neutral", temperature=0.7, focus="group", task="rank", model="gpt-4o", demographics="None", append=True):
-    filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, demographics]))
-    if(not append):
-        pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
-        pathlib.Path(filename_base+".db").unlink(missing_ok=True)
-
-    os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={}".format(lean,model,focus,task,iteration,temperature, demographics))
-
-    return filename_base+".csv"
-
 def other_percent(iteration=50, lean="neutral", temperature=0.7, focus="other", task="percent", model="gpt-4o", demographics="None", append=True):
     filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, demographics]))
     if(not append):
@@ -134,9 +124,10 @@ def gptmix(iteration=50, lean="neutral", temperature=0.7, focus="self", task="pe
 
 
 os.system('clear')
-# baseline_file=baseline(iteration=0, append=True)
+# baseline(iteration=0, append=True, topic="joke")
 # baseline(iteration=50, append=True, topic="poem")
-# group_rank_file=group_rank(iteration=15, append=True)
+# baseline(iteration=15, append=True, topic="joke", focus="group", task="rank")
+baseline(iteration=25, append=True, topic="poem", focus="group", task="rank")
 
 # group_percent_file=group_percent(iteration=15, append=True)
 
@@ -214,4 +205,4 @@ os.system('clear')
 
 print("\n\n\n========== Independent Agent Models =========\n")
 # gptmix_stat("gptmix_neutral_percent_self_0.7_None.csv")
-gptmix_ques("revised_gptmix_neutral_percent_self_0.7_None_questionnaire.csv", "revised_gptmix_neutral_percent_self_0.7_None.csv")
+# gptmix_ques("revised_gptmix_neutral_percent_self_0.7_None_questionnaire.csv", "revised_gptmix_neutral_percent_self_0.7_None.csv")

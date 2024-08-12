@@ -224,7 +224,7 @@ def gptmix_ques(file, evaluation_csv=""):
         # get score of each component
         choices=base_block["choice"].tolist()
         ans=[1 if x == y else 0 for x, y in zip(choices, ones)]
-        o={"total":sum(ans)-4}
+        o={"total":sum(ans)-ans[19]-ans[19]-ans[19]-ans[19]}
         for k in question_dim:
             o[k]=0
             for idx in question_dim[k]:
