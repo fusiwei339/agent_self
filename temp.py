@@ -77,10 +77,12 @@ def revise_iter(ques_file, eval_file):
 
     eval.to_csv("revised_"+eval_file, index=False)   
 
-import pathlib
-ques="gptmix_neutral_percent_self_0.7_None_questionnaire.csv"
-eval="gptmix_neutral_percent_self_0.7_None.csv"
-pathlib.Path("revised_"+ques).unlink(missing_ok=True)
-pathlib.Path("revised_"+eval).unlink(missing_ok=True)
-revise_iter(ques, eval)
+def ques_stat(file):
+
+# import pathlib
+# ques="gptmix_neutral_percent_self_0.7_None_questionnaire.csv"
+# eval="gptmix_neutral_percent_self_0.7_None.csv"
+# pathlib.Path("revised_"+ques).unlink(missing_ok=True)
+# pathlib.Path("revised_"+eval).unlink(missing_ok=True)
+# revise_iter(ques, eval)
     
