@@ -1,5 +1,7 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 import json
+import seaborn as sns
 
 def enrich_dataframe(df, json_obj):
     # Convert JSON object to a dictionary
@@ -78,6 +80,18 @@ def revise_iter(ques_file, eval_file):
     eval.to_csv("revised_"+eval_file, index=False)   
 
 def ques_stat(file):
+    
+    ques=pd.read_csv(file, header=0)
+    ques=ques.drop(["percentage"], axis=1)
+    model_groups=ques.groupby(["model"])
+    for key, item in model_groups:
+        model_block=model_groups.get_group(key).reset_index()
+        print(key, "description: \n")
+        sns.histplot(data=model_block, x="total")
+        plt.show()
+
+ques_stat("re_revised_gptmix_neutral_percent_self_0.7_None.csv")
+
 
 # import pathlib
 # ques="gptmix_neutral_percent_self_0.7_None_questionnaire.csv"

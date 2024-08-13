@@ -3,6 +3,10 @@ import os
 import re
 
 import pandas as pd
+pd.options.display.float_format = "{:,.2f}".format
+# pd.set_option('styler.format.precision', 2)
+# pd.option_context('display.precision', 3, 
+#                   'display.float_format', '{:.2f}'.format)
 import numpy as np
 import scipy.stats as stats 
 
@@ -10,6 +14,7 @@ import numpy as np
 import random
 from statistics import mean, stdev
 from math import sqrt
+import pathlib
 
 def reformat(filename):
     os.remove("reformat.csv")
@@ -198,11 +203,13 @@ def gptmix_stat(file):
     print(df)
     models=["gpt-4o", "gpt-3.5-turbo-1106", "gpt-4-turbo-preview", "gpt-4-0613", "gpt-3.5-turbo"]
     for i in range(len(models)):
-        if i==0:
-            continue
-        ret=stats.ttest_ind(get_model_data(models[0])["percentage"], get_model_data(models[i])["percentage"]) 
-        print("compare gpt-4o with: "+models[i])
-        print(ret, "\n")
+        target_data=get_model_data(models[i]).copy()
+        target_data["control"]=20
+        ret=stats.ttest_1samp(target_data['percentage'], 20) 
+        print(models[i]," compare with 20: \n", ret)
+        print("mean: ",target_data['percentage'].mean(), "\n")
+        cohensd=cohens_d(target_data['percentage'], target_data["control"])
+        print("cohens_d = ", cohensd)
 
 def gptmix_ques(file, evaluation_csv=""):
     base=pd.read_csv(file, header=0)
@@ -224,7 +231,7 @@ def gptmix_ques(file, evaluation_csv=""):
         # get score of each component
         choices=base_block["choice"].tolist()
         ans=[1 if x == y else 0 for x, y in zip(choices, ones)]
-        o={"total":sum(ans)-ans[19]-ans[19]-ans[19]-ans[19]}
+        o={"total":sum(ans)-ans[14]-ans[18]-ans[28]-ans[36]}
         for k in question_dim:
             o[k]=0
             for idx in question_dim[k]:
@@ -245,5 +252,6 @@ def gptmix_ques(file, evaluation_csv=""):
         print(key, " self evaluation correlates with:", "\n", ret)
 
 
+    pathlib.Path("re"+evaluation_csv).unlink(missing_ok=True)
     eval_csv.to_csv("re_"+evaluation_csv, index=False)   
         # condition=(eval_csv["model"]==base_block["model"].iloc[0] & eval_csv["iter"]==base_block["iter"].iloc[0] & eval_csv["name"]==base_block["name"].iloc[0]) 
