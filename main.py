@@ -141,44 +141,64 @@ os.system('clear')
 # temperatures(iteration=15, append=True)
 # temperatures(iteration=9, append=True, temperature=[1.4])
 
-# gptmix(iteration=8, append=True)
+# gptmix(iteration=15, append=True)
 
 
 
 
 print("\n\n\n========== Baseline joke =========\n")
 analyze_self_percent_1samp("gpt-4o_neutral_percent_self_0.7_None.csv")
+reformat_json("gpt-4o_neutral_percent_self_0.7_None.csv")
+
 print("\n\n\n========== Baseline poem =========\n")
 analyze_self_percent_1samp("gpt-4o_neutral_percent_self_0.7_poem_None.csv")
+reformat_json("gpt-4o_neutral_percent_self_0.7_poem_None.csv")
+
 print("\n\n\n========== Group Rank =========\n")
 analyze_group_rank("gpt-4o_neutral_rank_group_0.7_None.csv")
 
 print("\n\n\n========== Group Percent =========\n")
 analyze_group_percent("gpt-4o_neutral_percent_group_0.7_None.csv")
-analyze_other_percent_1samp("gpt-4o_neutral_percent_group_0.7_None.csv")
+reformat_json("gpt-4o_neutral_percent_group_0.7_None.csv")
+# analyze_other_percent_1samp("gpt-4o_neutral_percent_group_0.7_None.csv")
 
 print("\n\n\n========== Compare Self & Group Percent =========\n")
 analyze_self_percent_ind("gpt-4o_neutral_percent_self_0.7_None.csv", "gpt-4o_neutral_percent_group_0.7_None.csv")
 
 print("\n\n\n========== Pos and Neg =========\n")
 analyze_self_percent_ind("gpt-4o_positive_percent_self_0.7_None.csv", "gpt-4o_negative_percent_self_0.7_None.csv")
+reformat_json("gpt-4o_negative_percent_self_0.7_None.csv")
+reformat_json("gpt-4o_positive_percent_self_0.7_None.csv")
 
 print("\n\n\n========== American =========\n")
 analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_an_American.csv')
+reformat_json('gpt-4o_neutral_percent_self_0.7_an_American.csv')
+
 print("\n\n\n========== Asian American =========\n")
 analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_an_Asian_American.csv')
+reformat_json('gpt-4o_neutral_percent_self_0.7_an_Asian_American.csv')
+
 print("\n\n\n========== African American =========\n")
 analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_an_African_American.csv')
+reformat_json('gpt-4o_neutral_percent_self_0.7_an_African_American.csv')
+
 print("\n\n\n========== Female =========\n")
 analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_female.csv')
+reformat_json('gpt-4o_neutral_percent_self_0.7_female.csv')
+
 print("\n\n\n========== Male =========\n")
 analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_male.csv')
+reformat_json('gpt-4o_neutral_percent_self_0.7_male.csv')
 
 
 print("\n\n\n========== Temperature=0 =========\n")
 analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.0_None.csv')
+reformat_json('gpt-4o_neutral_percent_self_0.0_None.csv')
+
 print("\n\n\n========== Temperature=1.4 =========\n")
 analyze_self_percent_1samp('gpt-4o_neutral_percent_self_1.4_None.csv')
+reformat_json('gpt-4o_neutral_percent_self_1.4_None.csv')
+
 print("\n\n\n========== one way anova =========\n")
 oneway_anova('gpt-4o_neutral_percent_self_0.0_None.csv','gpt-4o_neutral_percent_self_0.7_None.csv','gpt-4o_neutral_percent_self_1.4_None.csv')
 
@@ -188,12 +208,18 @@ print("\n\n\n========== LLAMA-2-70b =========\n")
 analyze_self_percent_1samp('Llama-2-70b-chat-hf_neutral_percent_self_0.7_None.csv')
 print("\n\n\n========== LLAMA-3-70b =========\n")
 analyze_self_percent_1samp('Llama-3-70b-chat-hf_neutral_percent_self_0.7_None.csv')
+
 print("\n\n\n========== gpt-3.5-turbo-0125 =========\n")
 analyze_self_percent_1samp('gpt-3.5-turbo-0125_neutral_percent_self_0.7_None.csv')
+reformat_json('gpt-3.5-turbo-0125_neutral_percent_self_0.7_None.csv')
+
 print("\n\n\n========== gpt-4-1106-preview =========\n")
 analyze_self_percent_1samp('gpt-4-1106-preview_neutral_percent_self_0.7_None.csv')
+reformat_json('gpt-4-1106-preview_neutral_percent_self_0.7_None.csv')
+
 print("\n\n\n========== gpt-4o =========\n")
 analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_None.csv')
+reformat_json('gpt-4o_neutral_percent_self_0.7_None.csv')
 
 
 print("\n\n\n========== Compare GPT 4.0 & GPT 4o =========\n")

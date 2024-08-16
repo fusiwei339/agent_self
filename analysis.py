@@ -4,9 +4,6 @@ import re
 
 import pandas as pd
 pd.options.display.float_format = "{:,.2f}".format
-# pd.set_option('styler.format.precision', 2)
-# pd.option_context('display.precision', 3, 
-#                   'display.float_format', '{:.2f}'.format)
 import numpy as np
 import scipy.stats as stats 
 
@@ -16,13 +13,12 @@ from statistics import mean, stdev
 from math import sqrt
 import pathlib
 
-def reformat(filename):
-    os.remove("reformat.csv")
+def reformat_json(filename):
     pos=pd.read_csv(filename, header=0)
-    pos=pos.query("kind != 'peer'").head(200)
+    pos=pos.query("kind != 'peer'")
 
     nrow, ncol=pos.shape
-    names=["one", "two", "three","four"]
+    names=["One", "Two", "Three","Four", "Five"]
 
     block=5
     summary=[]
@@ -33,9 +29,11 @@ def reformat(filename):
             pRow[names[j]]=pos.loc[pos.index[idx],"percentage"]
         summary.append(pRow)
 
-    df=pd.DataFrame(summary)
-    # print(df.head())
-    df.to_csv("reformat.csv", mode='a', index=False, header=False)
+    pd.DataFrame(summary).to_json("json/"+filename+".json", orient='records')
+
+def reformat_summary(inputfile):
+    df=cal_group_sum(inputfile, "self")
+    df.to_csv("summary/"+inputfile, index=False)
 
 
 # # analyze rating file
@@ -207,9 +205,9 @@ def gptmix_stat(file):
         target_data["control"]=20
         ret=stats.ttest_1samp(target_data['percentage'], 20) 
         print(models[i]," compare with 20: \n", ret)
-        print("mean: ",target_data['percentage'].mean(), "\n")
+        print("mean: ",target_data['percentage'].mean())
         cohensd=cohens_d(target_data['percentage'], target_data["control"])
-        print("cohens_d = ", cohensd)
+        print("cohens_d = ", cohensd, "\n")
 
 def gptmix_ques(file, evaluation_csv=""):
     base=pd.read_csv(file, header=0)
