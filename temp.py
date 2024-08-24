@@ -90,7 +90,7 @@ def ques_stat(file):
         sns.histplot(data=model_block, x="total")
         plt.show()
 
-ques_stat("re_revised_gptmix_neutral_percent_self_0.7_None.csv")
+# ques_stat("re_revised_gptmix_neutral_percent_self_0.7_None.csv")
 
 
 # import pathlib
@@ -100,3 +100,5 @@ ques_stat("re_revised_gptmix_neutral_percent_self_0.7_None.csv")
 # pathlib.Path("revised_"+eval).unlink(missing_ok=True)
 # revise_iter(ques, eval)
     
+def gptmix_clean(file):
+    gptmix=pd.read_csv(file, header=0)

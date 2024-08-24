@@ -73,28 +73,29 @@ def create_agent(name):
         llm_config=get_model(),
     )  
 
-agents=[create_agent(i) for i in names]
-
-initializer = UserProxyAgent(
-    name="init",
-    human_input_mode="NEVER",
-    code_execution_config=False,
-)
-
-groupchatPlay = autogen.GroupChat(
-    agents=[initializer]+agents,
-    messages=[],
-    max_round=len(names)+1,
-    speaker_selection_method="round_robin",
-    # send_introductions=True,
-)
-managerPlay = autogen.GroupChatManager(
-    name="play manager",
-    groupchat=groupchatPlay, 
-    llm_config=get_model()
-)
-
 for i in range(iteration):
+
+    agents=[create_agent(i) for i in names]
+
+    initializer = UserProxyAgent(
+        name="init",
+        human_input_mode="NEVER",
+        code_execution_config=False,
+    )
+
+    groupchatPlay = autogen.GroupChat(
+        agents=[initializer]+agents,
+        messages=[],
+        max_round=len(names)+1,
+        speaker_selection_method="round_robin",
+        # send_introductions=True,
+    )
+    managerPlay = autogen.GroupChatManager(
+        name="play manager",
+        groupchat=groupchatPlay, 
+        llm_config=get_model()
+    )
+
     task_chat_result=initializer.initiate_chat(managerPlay, message=task_prompt[topic], cache=None)
 
     if model_name.startswith("meta"):

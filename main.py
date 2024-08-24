@@ -91,7 +91,7 @@ def temperatures(iteration=50, lean="neutral",
 
         os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={}".format(lean,model,focus,task,iteration,t, demographics))
 
-def models(iteration=50, lean="neutral", temperature=0.7, focus="self", task="percent", 
+def models(iteration=50, lean="neutral", temperature=0.7, focus="group", task="percent", 
            model=[
                "gpt-4-1106-preview", 
                "gpt-3.5-turbo-0125", 
@@ -128,7 +128,9 @@ os.system('clear')
 # baseline(iteration=50, append=True, topic="poem")
 # baseline(iteration=15, append=True, topic="joke", focus="group", task="rank")
 
-# group_percent_file=group_percent(iteration=15, append=True)
+# group_percent(iteration=15, append=True)
+# group_percent(iteration=7, append=True, model= "gpt-4-1106-preview")
+# group_percent(iteration=11, append=True, model= "gpt-3.5-turbo-0125")
 
 # models(iteration=15, append=True)
 # other_percent(iteration=15)
@@ -157,9 +159,23 @@ reformat_json("gpt-4o_neutral_percent_self_0.7_poem_None.csv")
 print("\n\n\n========== Group Rank =========\n")
 analyze_group_rank("gpt-4o_neutral_rank_group_0.7_None.csv")
 
-print("\n\n\n========== Group Percent =========\n")
+print("\n\n\n========== Other focus =========\n")
+error_handler("gpt-4o_neutral_percent_group_0.7_None.csv")
 analyze_group_percent("gpt-4o_neutral_percent_group_0.7_None.csv")
 reformat_json("gpt-4o_neutral_percent_group_0.7_None.csv")
+
+print("\n\n\n========== GPT-4 Other focus =========\n")
+error_handler("gpt-4-1106-preview_neutral_percent_group_0.7_joke_None.csv")
+analyze_group_percent("gpt-4-1106-preview_neutral_percent_group_0.7_joke_None.csv")
+cal_group_sum("gpt-4-1106-preview_neutral_percent_group_0.7_joke_None.csv")
+
+print("\n\n\n========== GPT-3.5 Other focus =========\n")
+error_handler("gpt-3.5-turbo-0125_neutral_percent_group_0.7_joke_None.csv")
+analyze_group_percent("gpt-3.5-turbo-0125_neutral_percent_group_0.7_joke_None.csv")
+cal_group_sum("gpt-3.5-turbo-0125_neutral_percent_group_0.7_joke_None.csv")
+
+# print("\n\n\n========== Llama 2 Group Percent =========\n")
+# cal_group_sum("Llama-2-70b-chat-hf_neutral_percent_group_0.7_joke_None.csv")
 # analyze_other_percent_1samp("gpt-4o_neutral_percent_group_0.7_None.csv")
 
 print("\n\n\n========== Compare Self & Group Percent =========\n")
@@ -229,5 +245,7 @@ print("\n\n\n========== Next team member=========\n")
 analyze_next_percent_1samp("gpt-4o_neutral_percent_other_0.7_None.csv")
 
 print("\n\n\n========== Independent Agent Models =========\n")
+error_handler("gptmix_neutral_percent_self_0.7_None.csv")
 gptmix_stat("gptmix_neutral_percent_self_0.7_None.csv")
+gptmix_reformat_json("gptmix_neutral_percent_self_0.7_None.csv")
 # gptmix_ques("revised_gptmix_neutral_percent_self_0.7_None_questionnaire.csv", "revised_gptmix_neutral_percent_self_0.7_None.csv")

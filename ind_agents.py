@@ -63,9 +63,8 @@ for it in range(iteration):
 
     filename_base="_".join(map(str,[os.path.basename(model_name), lean, task, focus, temperature, demographics.replace(" ", "_")]))
 
-    if model_name.startswith("gpt"):
-        logging_session_id = autogen.runtime_logging.start(config={"dbname": filename_base+".db"})
-        print("Logging session ID: " + str(logging_session_id))
+    logging_session_id = autogen.runtime_logging.start(config={"dbname": filename_base+".db"})
+    print("Logging session ID: " + str(logging_session_id))
 
     def create_agent(name):
         return AssistantAgent(
@@ -100,12 +99,7 @@ for it in range(iteration):
         llm_config=default_model
     )
 
-
-
     task_chat_result=initializer.initiate_chat(managerPlay, message=task_prompt["joke"], cache=None)
-
-    if model_name.startswith("meta"):
-        save_to_json(task_chat_result.chat_history, filename_base+".json")
 
     initializer2 = UserProxyAgent(
         name="init2",
@@ -122,18 +116,14 @@ for it in range(iteration):
         )
 
         save_to_csv_gptmix(eval_chat_result.chat_history[-1]["content"], names[j], filename_base+".csv", model_obj[names[j]], it)
-        if model_name.startswith("meta"):
-            save_to_json(eval_chat_result.chat_history, filename_base+".json")
 
-        questions=task_prompt["questionnaire_Q"]
-        instruction=task_prompt["questionnaire_instruct"]
-        for q in questions:
-            q_result=initializer2.initiate_chat(
-                agents[j],
-                message=instruction+q
-            )
-            save_to_csv_gptmix(q_result.chat_history[-1]["content"], names[j], filename_base+"_questionnaire"+".csv", model_obj[names[j]],it)
+        # questions=task_prompt["questionnaire_Q"]
+        # instruction=task_prompt["questionnaire_instruct"]
+        # for q in questions:
+        #     q_result=initializer2.initiate_chat(
+        #         agents[j],
+        #         message=instruction+q
+        #     )
+        #     save_to_csv_gptmix(q_result.chat_history[-1]["content"], names[j], filename_base+"_questionnaire"+".csv", model_obj[names[j]],it)
         
-
-if model_name.startswith("gpt"):
     autogen.runtime_logging.stop()

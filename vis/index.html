@@ -19,23 +19,18 @@
         return ret
     }
 
-    function drawPixelBar(svg, data, h, w, drawYaxis){
-        var margin = {top: 0, right: 0, bottom: 0, left: 0},
-            width = w- margin.left - margin.right,
-            height = h- margin.top - margin.bottom;
+    function drawPixelBar(svg, data, height, width, drawYaxis){
 
         const series = d3.stack()
             .keys(d3.union(data.map(d => d.rank))) // distinct series keys, in input order
             .value(([, D], key) => D.get(key).val) // get value for each series key and stack
             (d3.index(data, d => d.group, d => d.rank)); // group by stack then series key
 
-        // Prepare the scales for positional and color encodings.
         const x = d3.scaleBand()
             .domain(d3.groupSort(data, (g1, g2) => {
                 let g1sum=d3.sum(g1, d => d.val)
                 let g2sum=d3.sum(g2, d => d.val)
                 if(g1sum == g2sum){
-                    console.log(g1, g2)
                     for(let i=g1.length-1;i>0; i--){
                         if(g1[i].val==g2[i].val) continue
                         return g1[i].val-g2[i].val
@@ -43,16 +38,21 @@
                 }
                 return g1sum-g2sum
             }, d => d.group))
-            .range([margin.left, width - margin.right])
-            .padding(0);
+            .range([0, width])
+            .padding(0.5);
 
         const y = d3.scaleLinear()
             .domain([0, 140])
-            .rangeRound([height - margin.bottom, margin.top]);
+            .rangeRound([height, 0]);
 
-        const color = d3.scaleSequential(d3.interpolateBlues)
-            .domain([0, 40])
+        const colorScale = d3.scaleSequential(d3.interpolatePurples)
+            .domain([5, 35])
             .unknown("#ccc");
+
+        let values=[5, 10, 15, 20, 25, 30, 35]
+        for (let index = 0; index < values.length; index++) {
+            console.log(d3.color(colorScale(values[index])).formatHex()); 
+        }
 
         svg.append("g")
             .selectAll()
@@ -65,33 +65,110 @@
             .attr("y", d => y(d[1]))
             .attr("height", d => y(d[0]) - y(d[1]))
             .attr("width", x.bandwidth())
-            .attr("fill", d => color(d[1]-d[0]))
+            .attr("fill", d => colorScale(d[1]-d[0]))
             .append("title")
 
         // Append the vertical axis.
         if(drawYaxis){
             svg.append("g")
-                .attr("transform", `translate(${margin.left},0)`)
                 .call(d3.axisLeft(y).ticks(null, "s"))
                 .call(g => g.selectAll(".domain").remove());
         }
+
+        
+        // draw violin diagram
+        let groupSum=d3.rollups(data, D=>d3.sum(D, e=>e.val), d=>d.group)
+        // let bin=d3.bin().value(d=>d[1]).thresholds(y.ticks(28)).domain([d3.min(groupSum, d=>d[1])-5, d3.max(groupSum, d=>d[1])+5])
+
+        var xNum = d3.scaleLinear()
+            .range([0, width])
+            .domain([-40,40])
+
+        // let bins=bin(groupSum)
+
+        // svg.append("g")
+        //     .attr("class", "violinG")
+        //     .append("path")
+        //     .datum(bin(groupSum))
+        //     .style("fill", "#e08214")
+        //     .style("opacity",0.4)
+        //     .attr("d", d3.area()
+        //         .x0(function(d){ return(xNum(-d.length)) } )
+        //         .x1(function(d){ return(xNum(d.length)) } )
+        //         .y(function(d){ return(y(d.x0)) } )
+        //         .curve(d3.curveCatmullRom)    // This makes the line smoother to give the violin appearance. Try d3.curveStep to see the difference
+        //     )
+
+
+        // draw error bars
+        let color="#e08214"
+        function getSD(array) {
+            if (array.length < 2) {
+                return undefined;
+            }
+            const n = array.length;
+            const mean = getMean(array)
+            return Math.sqrt(
+                array.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / (n - 1),
+            );
+        }
+        function getMean(array){
+            const n = array.length;
+            return array.reduce((a, b) => a + b) / n;
+        }
+        let groupSumNum=groupSum.map(d=>d[1])
+        let errorBarDatum={avg:getMean(groupSumNum), sde: getSD(groupSumNum)}
+
+        let symbolG=svg.append("g")
+            .attr("class", "errorBarG")
+
+        symbolG.append("path")
+            .datum(errorBarDatum)
+            .attr("d", d=>{
+                let offset=2
+                let p=d3.path()
+                // Vertical line
+                p.moveTo(xNum(0), y(d.avg - d.sde))
+                p.lineTo(xNum(0), y(d.avg + d.sde))
+                // Bottom error bar
+                p.moveTo(xNum(0) - offset, y(d.avg - d.sde))
+                p.lineTo(xNum(0) + offset, y(d.avg - d.sde))
+                // Top error bar
+                p.moveTo(xNum(0) - offset, y(d.avg + d.sde))
+                p.lineTo(xNum(0) + offset, y(d.avg + d.sde))
+                return p.toString()
+            })
+            .attr("stroke", color)
+            .attr("stroke-width", 1)
+
+        symbolG.append("circle")
+            .datum(errorBarDatum)
+            .attr("cx", xNum(0))
+            .attr("cy", d=>y(d.avg))
+            .attr("r", 1.5)
+            .style("stroke", color)
+            .style("fill", color)
+        
+
     }
 
     // import { csv, json } from 'd3-fetch'
     import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
     Promise.all([
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_female.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_male.csv.json"),
         d3.json("json/gpt-4o_neutral_percent_self_0.7_None.csv.json"),
-        d3.json("json/gpt-4o_neutral_percent_self_0.7_poem_None.csv.json"),
-        d3.json("json/gpt-4o_neutral_percent_group_0.7_None.csv.json"),
-        d3.json("json/gpt-4o_neutral_percent_self_0.0_None.csv.json"),
-        d3.json("json/gpt-4o_neutral_percent_self_1.4_None.csv.json"),
-        d3.json("json/gpt-4-1106-preview_neutral_percent_self_0.7_None.csv.json"),
-        d3.json("json/gpt-3.5-turbo-0125_neutral_percent_self_0.7_None.csv.json"),
-        d3.json("json/gpt-4o_neutral_percent_self_0.7_an_American.csv.json"),
-        d3.json("json/gpt-4o_neutral_percent_self_0.7_an_Asian_American.csv.json"),
-        d3.json("json/gpt-4o_neutral_percent_self_0.7_an_African_American.csv.json"),
-        d3.json("json/gpt-4o_negative_percent_self_0.7_None.csv.json"),
-        d3.json("json/gpt-4o_positive_percent_self_0.7_None.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_poem_None.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_group_0.7_None.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.0_None.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_1.4_None.csv.json"),
+        // d3.json("json/gpt-4-1106-preview_neutral_percent_self_0.7_None.csv.json"),
+        // d3.json("json/gpt-3.5-turbo-0125_neutral_percent_self_0.7_None.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_an_American.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_an_Asian_American.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_an_African_American.csv.json"),
+        // d3.json("json/gpt-4o_negative_percent_self_0.7_None.csv.json"),
+        // d3.json("json/gpt-4o_positive_percent_self_0.7_None.csv.json"),
     ])
     .then((data) =>  {
         // data=dataprocessing(data);
@@ -108,12 +185,12 @@
             .data(data).enter()
             .append("g")
                 .attr("transform", (d, i)=>
-                    "translate(" + (margin.left+i*100) + "," + margin.top + ")")
+                    "translate(" + (margin.left+i*60) + "," + margin.top + ")")
                 .each(function(d, i){
                     let node=d3.select(this)
                     let b=i==0?true:false
                     let input=dataprocessing(d)
-                    drawPixelBar(node, input, 270, 80, b)
+                    drawPixelBar(node, input, 270, 200, b)
                 })
     });
 

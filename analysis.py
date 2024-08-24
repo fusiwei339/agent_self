@@ -29,11 +29,30 @@ def reformat_json(filename):
             pRow[names[j]]=pos.loc[pos.index[idx],"percentage"]
         summary.append(pRow)
 
-    pd.DataFrame(summary).to_json("json/"+filename+".json", orient='records')
+    # pd.DataFrame(summary).to_json("json/"+filename+".json", orient='records')
 
 def reformat_summary(inputfile):
-    df=cal_group_sum(inputfile, "self")
+    df=cal_group_self_sum(inputfile, "self")
     df.to_csv("summary/"+inputfile, index=False)
+
+def gptmix_reformat_json(filename):
+    mix=pd.read_csv(filename, header=0)
+    mix=mix.query("kind != 'peer'")
+
+    nrow, ncol=mix.shape
+    names=["gpt-3.5-turbo", "gpt-4o", "gpt-4-0613","gpt-4-turbo-preview", "gpt-3.5-turbo-1106"]
+
+    block=5
+    summary=[]
+    for i in range(int(nrow/block)):
+        round=mix.iloc[i*block:i*block+block]
+        pRow={"sum":round["percentage"].sum(), "round":i}
+        for j in range(block):
+            idx=i*block+j
+            pRow[names[j]]=mix.loc[mix.index[idx],"percentage"]
+        summary.append(pRow)
+
+    pd.DataFrame(summary).to_json(filename+".json", orient='records')
 
 
 # # analyze rating file
@@ -57,7 +76,7 @@ def analyze_group_rank(filename):
 
 # # analyze percentage file
 def analyze_group_percent(filename):
-    df=cal_group_sum(filename, "self")
+    df=cal_group_self_sum(filename, "self")
     df["base"]=100
     df.columns=["group", "base"]
 
@@ -74,7 +93,7 @@ def cohens_d(df1, df2):
     return ((mean(c0) - mean(c1)) / (sqrt((stdev(c0) ** 2 + stdev(c1) ** 2) / 2)))
 
 def analyze_next_percent_1samp(file1):
-    df=cal_group_sum(file1, "peer")
+    df=cal_group_self_sum(file1, "peer")
     df["control"]=100
     df.columns=["base", "control"]
 
@@ -86,7 +105,7 @@ def analyze_next_percent_1samp(file1):
     print("cohens_d = ", cohensd)
 
 def analyze_self_percent_1samp(file1):
-    df=cal_group_sum(file1, "self")
+    df=cal_group_self_sum(file1, "self")
     df["control"]=100
     df.columns=["base", "control"]
 
@@ -121,8 +140,8 @@ def analyze_other_percent_1samp(file1):
     print("cohens_d = ", cohensd)
 
 def analyze_self_percent_ind(file1, file2):
-    f1=cal_group_sum(file1, "self")
-    f2=cal_group_sum(file2, "self")
+    f1=cal_group_self_sum(file1, "self")
+    f2=cal_group_self_sum(file2, "self")
     if f1.shape!=f2.shape:
         return
     df=pd.concat([f1["group_sum"], f2["group_sum"]], axis=1, keys=["base", "comparison"])
@@ -137,7 +156,7 @@ def analyze_self_percent_ind(file1, file2):
 
 def error_handler(filename):
     file=pd.read_csv(filename, header=0)
-    file=file.query("kind != 'peer'")
+    # file=file.query("kind != 'peer'")
     nrow, ncol=file.shape
     block=5
     final=[]
@@ -158,8 +177,10 @@ def error_handler(filename):
     ret=pd.concat(final)
     print(ret.shape)
 
-def cal_group_sum(file1, ident):
+def cal_group_self_sum(file1, ident):
     base=pd.read_csv(file1, header=0)
+    base['percentage']=base['percentage'].astype(str).str.rstrip('%').astype(float)
+
     if ident=="self":
         base=base.query("kind != 'peer'")
     elif ident=="next" or ident=="peer":
@@ -177,10 +198,32 @@ def cal_group_sum(file1, ident):
         summary.append(comp)
     return pd.DataFrame(summary)
 
+def cal_group_sum(file1):
+    base=pd.read_csv(file1, header=0)
+    base['percentage']=base['percentage'].astype(str).str.rstrip('%').astype(float)
+
+    nrow, ncol=base.shape
+    block=5
+    summary=[]
+
+    for i in range(int(nrow/block)):
+        p=base.iloc[i*block:i*block+block]
+        temp=["One", "Two", "Three", "Four", "Five" ]
+        current=p["name"].to_list()
+        if current != temp:
+            print(current, temp)
+        if p["percentage"].sum()!=100:
+            print("sum error")
+        comp={
+            "group_sum":p["percentage"].sum(),
+        }
+        summary.append(comp)
+    return pd.DataFrame(summary)
+
 def oneway_anova(file1, file2, file3):
-    a1=cal_group_sum(file1, "self")["group_sum"].values
-    a2=cal_group_sum(file2, "self")["group_sum"].values
-    a3=cal_group_sum(file3, "self")["group_sum"].values
+    a1=cal_group_self_sum(file1, "self")["group_sum"].values
+    a2=cal_group_self_sum(file2, "self")["group_sum"].values
+    a3=cal_group_self_sum(file3, "self")["group_sum"].values
     lens=min(len(a1), len(a2), len(a3))
     a1=a1[0:lens]
     a2=a2[0:lens]
