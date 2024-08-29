@@ -102,3 +102,14 @@ def ques_stat(file):
     
 def gptmix_clean(file):
     gptmix=pd.read_csv(file, header=0)
+
+    nrow, ncol=gptmix.shape
+    block=5
+    idx=0
+    for i in range(int(nrow/block)):
+        gptmix.loc[i*block:i*block+block-1, "iter"]=idx
+        idx=idx+1
+
+    gptmix.to_csv("revised65_"+file, index=False)   
+
+gptmix_clean("gptmix_neutral_percent_self_0.7_None.csv")

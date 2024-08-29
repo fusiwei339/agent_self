@@ -12,7 +12,7 @@
     // set the dimensions and margins of the graph
     const margin = {top: 30, right: 10, bottom: 20, left: 0},
       width = 500 - margin.left - margin.right,
-      height = 200 - margin.top - margin.bottom;
+      height = 270 - margin.top - margin.bottom;
     
     // append the svg object to the body of the page
     const svg = d3.select("#my_dataviz")
@@ -68,10 +68,11 @@
       }
       return ret
     }
-    d3.json("json/gptmix_neutral_percent_self_0.7_None.csv.json").then(function(origin){
-      origin=origin
-      data=preprocess(origin)
-      let dimension=["gpt-4o", "gpt-4-turbo-preview", "gpt-4-0613", "gpt-3.5-turbo", "gpt-3.5-turbo-1106"]
+    d3.csv("json/revised65_gptmix_neutral_percent_self_0.7_None.csv").then(function(origin){
+      data=origin
+      // data=preprocess(origin)
+      // let dimension=["gpt-4o", "gpt-4-turbo-preview", "gpt-4-0613", "gpt-3.5-turbo", "gpt-3.5-turbo-1106"]
+      let dimension=[ "gpt-3.5-turbo-1106","gpt-3.5-turbo", "gpt-4-0613","gpt-4-turbo-preview","gpt-4o" ]
       let yband=d3.scaleBand()
           .domain([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50])
           .range([height, 0])
@@ -87,36 +88,23 @@
 
       let axisWidth=10
 
+      let groupped=d3.group(data, d=>d.model)
       let histogram={} 
       for(let i=0;i<dimension.length;i++){
         let d=dimension[i]
         let h=d3.histogram()
-          .value(e=>e[d])
-          // .domain(yband.domain())
+          .value(e=>e.percentage)
           .thresholds(yband.domain());
-        histogram[d]=h(origin)
+        histogram[d]=h(groupped.get(d))
       }
       let barData=Object.keys(histogram).map(function(key){return {model:key, rects:histogram[key]}})
-      console.log(barData);
 
       function drawline(d) {
-          return d3.line()(d.path.map(e=>{
-            if(e.kind==="ori"){
-              return [x(e.model), ylinear(e.val)]
-            }
-            return [x(e.model)+axisWidth, ylinear(e.val)]
+          return d3.line()(d.map(e=>{
+              let center=x(e[0])+axisWidth/2
+              return [center, ylinear(e[1].mean)]
           }));
       }
-
-      svg
-        .selectAll("myPath")
-        .data(data)
-        .join("path")
-        .attr("d",  drawline)
-        .style("fill", "none")
-        .style("stroke", "#69b3a2")
-        .style("opacity", 0.3)
-
       svg.selectAll('g')
         .data(barData)
         .enter().append('g')
@@ -137,21 +125,33 @@
         .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
         .each(function(d) { 
           d3.select(this).call(d3.axisLeft().scale(ylinear).tickValues([0, 50])); 
-          d3.select(this).select('path').style('opacity',0)
-          d3.select(this).select('line').style('opacity',0.1)
+          d3.select(this).selectAll('path').style('opacity',0)
+          d3.select(this).selectAll('line').style('opacity',0.2)
         })
-        .append("text")
-          .style("text-anchor", "middle")
-          .attr("y", height+12)
-          .text(function(d) { return d; })
-          .style("fill", "black")
+        // .append("text")
+        //   .style("text-anchor", "middle")
+        //   .attr("y", height+12)
+        //   .text(function(d) { return d; })
+        //   .style("fill", "black")
 
-      let data2=flatdata(origin)
-      let boxdata=d3.rollups(data2, g=>{
-        let mean=d3.mean(g, e=>e.val)
-        let sd=d3.deviation(g, e=>e.val)
+
+        svg.append("g")
+            .attr('transform', `translate(0, ${height})`)
+            .call(d3.axisBottom(x))
+            .call(g => g.selectAll(".domain").remove())
+            .call(g => g.selectAll("line").style('opacity',0.2));
+
+      // let data2=flatdata(origin)
+      let boxdata=d3.rollups(data, g=>{
+        let mean=d3.mean(g, e=>e.percentage)
+        let sd=d3.deviation(g, e=>e.percentage)
         return {mean, sd}
       }, d=>d.model)
+
+      boxdata.sort(function(a, b){
+          return dimension.indexOf(a[0])-dimension.indexOf(b[0])
+      })
+
 
       console.log(boxdata);
 
@@ -205,6 +205,15 @@
           .style("text-anchor", "end")
           .style("font-size", "11px")
       })
+
+      symbolG
+          .append("path")
+          .attr("d",  drawline(boxdata))
+          .attr('class', "myline")
+          .style("fill", "none")
+          .style("stroke", color)
+          .style("opacity", 1)
+
 
     })
 

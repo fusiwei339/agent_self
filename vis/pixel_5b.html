@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<!-- <script src="https://d3js.org/d3.v5.js"></script> -->
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+
+<script type="module">
+    function drawPixelBar(svg, input, height, width, drawYaxis){
+        let data=input
+        let series=d3.groups(data, d=>d.model)
+        let dimension=[ "gpt-3.5-turbo-1106","gpt-3.5-turbo", "gpt-4-0613","gpt-4o" ,"gpt-4-turbo-preview"]
+        const fx = d3.scaleBand()
+            .domain(dimension)
+            .range([0, width])
+            .padding(0.08);
+
+        let iters=series[0][1].length
+        let xdomain=[...Array(iters).keys()]
+
+        const x = d3.scaleBand()
+            .domain(xdomain)
+            .rangeRound([0, fx.bandwidth()])
+            .padding(0);
+
+        const y = d3.scaleLinear()
+            .domain([0, 50])
+            .rangeRound([height, 0]);
+
+        const colorScale = d3.scaleSequential(d3.interpolatePurples)
+            .domain([0, 50])
+            .unknown("#ccc");
+
+        let percentageues=[0, 10, 20, 30, 40, 50]
+        for (let index = 0; index < percentageues.length; index++) {
+            console.log(d3.color(colorScale(percentageues[index])).formatHex()); 
+        }
+
+        svg.append("g")
+            .selectAll()
+            .data(series)
+            .join("g")
+                .attr("transform", (s) => `translate(${fx(s[0])},0)`)
+            .selectAll("rect")
+            .data(D => {
+                let tmp=D[1].sort((a, b)=>a.percentage-b.percentage)
+                return tmp
+            })
+            .join("rect")
+            .attr("x", (d, i) => x(i))
+            .attr("y", d => y(d.percentage))
+            .attr("height", d => {
+                if(d.percentage==0){
+                    return height-y(.3)
+                }
+                return height - y(d.percentage)
+            })
+            .attr("width", x.bandwidth())
+            .attr("fill", d => {
+                if(d.percentage==0){
+                    return "#ccc"
+                }
+                return colorScale(d.percentage)
+            })
+            .attr("stroke", d => {
+                if(d.percentage==0){
+                    return "#ccc"
+                }
+                return colorScale(d.percentage)
+            })
+            .attr("stroke-width", d=>{
+                if(d.percentage==0){
+                    return .0
+                }
+                return 0
+            })
+
+        // Append the vertical axis.
+        svg.append("g")
+            .call(d3.axisLeft(y).ticks(null, "s"))
+            .call(g => g.selectAll(".domain").remove());
+
+        svg.append("g")
+            .attr('transform', `translate(0, ${height})`)
+            .call(d3.axisBottom(fx))
+            .call(g => g.selectAll(".domain").remove());
+
+
+        // draw error bars
+        let color="#333"
+        let errorBarData=[]
+        series.sort(function(a, b){
+            return dimension.indexOf(a[0])-dimension.indexOf(b[0])
+        })
+        for(let i in series){
+            let g=series[i][1]
+            errorBarData.push({model: series[i][0], avg: d3.mean(g, d=>d.percentage), sde: d3.deviation(g, d=>d.percentage)})
+        }
+        
+        let symbolG=svg.append("g")
+            .attr("class", "errorBarG")
+
+        symbolG.append("g")
+            .selectAll()
+            .data(errorBarData)
+            .join('path')
+            .attr("d", d=>{
+                let offset=3
+                let p=d3.path()
+                let center=fx(d.model)+fx.bandwidth()/2
+                // Vertical line
+                p.moveTo(center, y(d.avg - d.sde))
+                p.lineTo(center, y(d.avg + d.sde))
+                // Bottom error bar
+                p.moveTo(center - offset, y(d.avg - d.sde))
+                p.lineTo(center + offset, y(d.avg - d.sde))
+                // Top error bar
+                p.moveTo(center - offset, y(d.avg + d.sde))
+                p.lineTo(center + offset, y(d.avg + d.sde))
+                return p.toString()
+            })
+            .attr("stroke", color)
+            .attr("stroke-width", 1)
+
+        symbolG.append("g")
+            .selectAll()
+            .data(errorBarData)
+            .join('circle')
+            .attr("cx", d=>{
+                let center=fx(d.model)+fx.bandwidth()/2
+                return center
+            })
+            .attr("cy", d=>y(d.avg))
+            .attr("r", 1.5)
+            .style("stroke", color)
+            .style("fill", color)
+        
+        symbolG
+            .append("path")
+            .attr("d",  drawline(errorBarData))
+            .attr('class', "myline")
+            .style("fill", "none")
+            .style("stroke", color)
+            .style("stroke-width", 1)
+            .style("opacity", 1)
+
+        function drawline(d) {
+            return d3.line()(d.map(e=>{
+                let center=fx(e.model)+fx.bandwidth()/2
+                return [center, y(e.avg)]
+            }));
+        }
+
+    }
+
+    // import { csv, json } from 'd3-fetch'
+    import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+    Promise.all([
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_female.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_male.csv.json"),
+        d3.csv("json/revised65_gptmix_neutral_percent_self_0.7_None.csv"),
+        // d3.json("json/revised_gptmix_neutral_percent_self_0.7_None.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_poem_None.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_group_0.7_None.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.0_None.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_1.4_None.csv.json"),
+        // d3.json("json/gpt-4-1106-preview_neutral_percent_self_0.7_None.csv.json"),
+        // d3.json("json/gpt-3.5-turbo-0125_neutral_percent_self_0.7_None.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_an_American.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_an_Asian_American.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_an_African_American.csv.json"),
+        // d3.json("json/gpt-4o_negative_percent_self_0.7_None.csv.json"),
+        // d3.json("json/gpt-4o_positive_percent_self_0.7_None.csv.json"),
+    ])
+    .then((data) =>  {
+        // data=dataprocessing(data);
+
+        var margin = {top: 10, right: 10, bottom: 40, left: 30},
+            width = 1570 - margin.left - margin.right,
+            height = 1300 - margin.top - margin.bottom;
+        // append the svg object to the body of the page
+        var svg = d3.select("#my_dataviz")
+            .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+            .selectAll("g")
+            .data(data).enter()
+            .append("g")
+                .attr("transform", (d, i)=>
+                    "translate(" + (margin.left+i*60) + "," + margin.top + ")")
+                .each(function(d, i){
+                    let node=d3.select(this)
+                    let b=i==0?true:false
+                    // let input=dataprocessing(d)
+                    drawPixelBar(node, d, 170, 300, b)
+                })
+    });
+
+
+</script>

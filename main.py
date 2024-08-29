@@ -10,13 +10,13 @@ from analysis import *
 # gender="None" 
 # iteration=20 
 
-def baseline(iteration=50, lean="neutral", temperature=0.7, focus="self", task="percent", model="gpt-4o", demographics="None", append=True, topic="joke"):
-    filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, topic, demographics]))
+def baseline(iteration=50, lean="neutral", temperature=0.7, focus="self", task="percent", model="gpt-4o", demographics="None", append=True, topic="joke", cot=False):
+    filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, topic, demographics, cot]))
     if(not append):
         pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
         pathlib.Path(filename_base+".db").unlink(missing_ok=True)
 
-    os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --topic={} --demographics={}".format(lean,model,focus,task,iteration, temperature, topic, demographics))
+    os.system("python3 /Users/siwei/repos/agent_self/percentage.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --topic={} --demographics={} --cot={}".format(lean,model,focus,task,iteration, temperature, topic, demographics, cot))
 
     return filename_base+".csv"
 
@@ -145,6 +145,7 @@ os.system('clear')
 
 # gptmix(iteration=15, append=True)
 
+baseline(iteration=10, append=True, topic="poem", cot=True)
 
 
 
@@ -247,5 +248,14 @@ analyze_next_percent_1samp("gpt-4o_neutral_percent_other_0.7_None.csv")
 print("\n\n\n========== Independent Agent Models =========\n")
 error_handler("gptmix_neutral_percent_self_0.7_None.csv")
 gptmix_stat("gptmix_neutral_percent_self_0.7_None.csv")
-gptmix_reformat_json("gptmix_neutral_percent_self_0.7_None.csv")
+# gptmix_reformat_json("gptmix_neutral_percent_self_0.7_None.csv")
 # gptmix_ques("revised_gptmix_neutral_percent_self_0.7_None_questionnaire.csv", "revised_gptmix_neutral_percent_self_0.7_None.csv")
+
+
+print("\n\n\n========== COT intervention =========\n")
+analyze_self_percent_1samp("gpt-4o_neutral_percent_self_0.7_poem_None_True.csv")
+# reformat_json("gpt-4o_neutral_percent_self_0.7_None.csv")
+
+"Figure 1 shows experiment results from Study 1 to Study 5. Taking the diagram (a) as an example, it employs pixel-based bar chart to demonstrate experiment results of Study 1a. The diagram is composed of 50 vertical lines with each indicates a round of experiment. As (b) shows, all vertical lines are sorted in an ascending order and a higher vertical line indicates higher total reported contribution of all five agents in a team. As (c) shows, each vertical line is composed of five pixel lines where each represents reported contribution of one agent. The reported contribution is proportional to both the height and color of the pixel line. "
+
+"From the pixel-based bar chart, we observe that different experimental settings result diverging patterns. For example, the diagram of Ex. 5a gpt-3.5-turbo-0125 shows large areas of light purple color, meaning most agents assign identical and lower scores, i.e., 20, to themselves. As a result, the mean total contribution is 101.53 with p=0.075, which shows no significant over-claiming  In contrary, the diagram of Ex. 3 Success feedback shows large portion of purple "

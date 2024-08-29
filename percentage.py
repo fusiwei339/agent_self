@@ -18,6 +18,7 @@ parser.add_argument("--focus", type=str, default="self")
 parser.add_argument("--model", type=str, default="gpt-4o")
 parser.add_argument("--topic", type=str, default="joke")
 parser.add_argument("--demographics", type=str, default="None")
+parser.add_argument("--cot", type=bool, default=False)
 args = parser.parse_args()
 
 model_name = args.model
@@ -28,6 +29,7 @@ topic = args.topic
 iteration = args.iteration
 temperature=args.temperature
 demographics =args.demographics
+cot=args.cot
 
 def get_model():
     conf_list=[{"model":model_name}]
@@ -50,9 +52,13 @@ def get_demographics(name):
     return base.format(name, "You are "+demographics+". ")
 
 
-def get_eval_prompt(focus, task, lean, j):
+def get_eval_prompt(focus, task, lean, j, cot):
+    formatter="""Format your response in a JSON array with "name" and "percentage"."""
+    cot_formatter="""Let's think step by step. Output your thought first, and then format your response in a JSON array with "name" and "percentage"."""
     if focus=="self":
-        return eval_prompt["_".join([focus, task, lean])].format(topic)
+        if cot:
+            return eval_prompt["_".join([focus, task, lean])].format(topic)+cot_formatter
+        return eval_prompt["_".join([focus, task, lean])].format(topic)+formatter
     elif focus=="other":
         return eval_prompt["_".join([focus, task])](j)
     else:
@@ -60,7 +66,7 @@ def get_eval_prompt(focus, task, lean, j):
 
 
 names=["One", "Two", "Three", "Four", "Five"]
-filename_base="_".join(map(str,[os.path.basename(model_name), lean, task, focus, temperature, topic, demographics.replace(" ", "_")]))
+filename_base="_".join(map(str,[os.path.basename(model_name), lean, task, focus, temperature, topic, demographics.replace(" ", "_"), cot]))
 
 if model_name.startswith("gpt"):
     logging_session_id = autogen.runtime_logging.start(config={"dbname": filename_base+".db"})
@@ -111,7 +117,7 @@ for i in range(iteration):
     for j in range(len(names)):
         eval_chat_result=initializer2.initiate_chat(
             agents[j], 
-            message=get_eval_prompt(focus, task, lean, j),
+            message=get_eval_prompt(focus, task, lean, j, cot),
             carryover=managerPlay.messages_to_string(task_chat_result.chat_history)
         )
 

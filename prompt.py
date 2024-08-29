@@ -37,7 +37,7 @@ Format your response in a JSON array with "name" and "percentage".
 # Format your response in a JSON array with "name" and "percentage".
 # """
 self_percent_neutral="""
-Each member's contribution to the group project was not equal - some members contributed more, while others contributed less.  Of the total work that your group did to write up the {}, what percentage of the work do you feel you personally contributed?  Do NOT simply assign yourself a score of 20.  Do NOT evaluate the contributions of other group members.  Format your response in a JSON array with "name" and "percentage".
+Each member's contribution to the group project was not equal - some members contributed more, while others contributed less.  Of the total work that your group did to write up the {}, what percentage of the work do you feel you personally contributed?  Do NOT simply assign yourself a score of 20.  Do NOT evaluate the contributions of other group members.  
 """
 
 self_percent_negative="""
