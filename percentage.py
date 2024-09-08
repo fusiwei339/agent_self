@@ -9,6 +9,16 @@ import argparse
 from prompt import task_prompt, eval_prompt, eval_prompt_next
 from utils import *
 
+def str_to_bool(value):
+    if isinstance(value, bool):
+        return value
+    if value.lower() in {'false', 'f', '0', 'no', 'n'}:
+        return False
+    elif value.lower() in {'true', 't', '1', 'yes', 'y'}:
+        return True
+    raise ValueError(f'{value} is not a valid boolean value')
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--temperature", type=float, default=1.0)
 parser.add_argument("--iteration", type=int, default=50)
@@ -18,7 +28,7 @@ parser.add_argument("--focus", type=str, default="self")
 parser.add_argument("--model", type=str, default="gpt-4o")
 parser.add_argument("--topic", type=str, default="joke")
 parser.add_argument("--demographics", type=str, default="None")
-parser.add_argument("--cot", type=bool, default=False)
+parser.add_argument("--cot", type=str_to_bool, default=False)
 args = parser.parse_args()
 
 model_name = args.model
@@ -30,6 +40,7 @@ iteration = args.iteration
 temperature=args.temperature
 demographics =args.demographics
 cot=args.cot
+print(args)
 
 def get_model():
     conf_list=[{"model":model_name}]

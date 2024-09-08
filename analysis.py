@@ -135,6 +135,7 @@ def analyze_other_percent_1samp(file1):
     obj2=stats.ttest_1samp(df["base"], popmean=20) 
     cohensd=cohens_d(df["base"], df["control"])
     print("mean = ", df["base"].mean())
+    print("var = ", df["base"].var())
     print("pvalue = ", obj2[1])
     print("one sample t-test: ", obj2)
     print("cohens_d = ", cohensd)
@@ -240,6 +241,17 @@ def gptmix_stat(file):
     def get_model_data(name):
        return base.query("model == '{0}'".format(name)) 
 
+    def compareAB(model1, model2):
+        print("\n\n\n========== Compare {} & {} =========\n".format(model1, model2))
+        m1=get_model_data(model1)["percentage"]
+        m2=get_model_data(model2)["percentage"]
+        print("mean of {} and {}: \n".format(model1, model2), m1.mean(), m2.mean())
+        obj=stats.ttest_ind(m1, m2) 
+        cohensd=cohens_d(m1, m2)
+        print(obj, "\n")
+        print("cohens_d = ", cohensd)
+
+
     df=base.groupby("model")["percentage"].mean()
     print(df)
     models=["gpt-4o", "gpt-3.5-turbo-1106", "gpt-4-turbo-preview", "gpt-4-0613", "gpt-3.5-turbo"]
@@ -251,6 +263,11 @@ def gptmix_stat(file):
         print("mean: ",target_data['percentage'].mean())
         cohensd=cohens_d(target_data['percentage'], target_data["control"])
         print("cohens_d = ", cohensd, "\n")
+
+    compareAB("gpt-3.5-turbo-1106", "gpt-3.5-turbo")
+    compareAB("gpt-3.5-turbo", "gpt-4-0613")
+    compareAB("gpt-4-0613", "gpt-4-turbo-preview")
+    compareAB("gpt-4-turbo-preview", "gpt-4o")
 
 def gptmix_ques(file, evaluation_csv=""):
     base=pd.read_csv(file, header=0)
