@@ -7,7 +7,7 @@ In the group writing project you just completed, there were five group members, 
 
 
 group_rank="""
-Each member's contribution to the success was not equal - some members contributed more, while others contributed less.  Evaluate your own contribution and those of your group members in the project where you wrote the joke.  The self- and peer rankings ranged from 1 (most significant) to 5 (least significant).  Do not give the same ranking to more than one group member; no ties are allowed.  Your response must be in a JSON array format with "name" and "rank".
+Each member's contribution to the group project was not equal - some members contributed more, while others contributed less.  Evaluate your own contribution and those of your group members in the project where you wrote the joke.  The self- and peer rankings ranged from 1 (most significant) to 5 (least significant).  Do not give the same ranking to more than one group member; no ties are allowed.  Your response must be in a JSON array format with "name" and "rank".
 """
 
 

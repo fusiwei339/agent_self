@@ -4,10 +4,11 @@ import pathlib
 from analysis import * 
 
 # fullpath="/Users/siwei/repos/agent_self/"
-fullpath="."
+fullpath=""
 
 def baseline(iteration=50, lean="neutral", temperature=0.7, focus="self", task="percent", model="gpt-4o", demographics="None", append=True, topic="joke", cot=False):
     filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, topic, demographics, cot]))
+    print(filename_base)
     if(not append):
         pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
         pathlib.Path(filename_base+".db").unlink(missing_ok=True)
@@ -118,8 +119,8 @@ analyze_self_percent_ind("data/gpt-4o_neutral_percent_self_0.7_None.csv", "data/
 
 # Expt 2b
 # baseline(iteration=50, append=True, focus="group", task="rank") # run your own experiment
-print("\n\n\n========== Group Rank =========\n")
-analyze_group_rank("data/gpt-4o_neutral_rank_group_0.7_None.csv")
+print("\n\n\n========== Other focus: Rank =========\n")
+analyze_group_rank("data/gpt-4o_neutral_rank_group_0.7_joke_None_False.csv")
 
 # Expt 3
 # baseline(iteration=50, append=True, lean="positive") # run your own experiment

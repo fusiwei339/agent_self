@@ -66,6 +66,7 @@ def analyze_group_rank(filename):
         comp=d.groupby("kind")["rank"].mean()
         summary.append(comp)
 
+    print(len(summary))
     df=pd.DataFrame(summary)
     print(df.describe())
     ret=stats.ttest_ind(df["peer"], df["self"]) 
