@@ -17,26 +17,26 @@ There are several files/directories in this repo:
 
 
 ## Quickstart
-1. Open a terminal and clone this repo to local directory.
+1. Open a terminal and clone this repo to the local directory;
     ```bash
     cd your/target/folder
     git clone https://github.com/fusiwei339/agent_self.git
     cd agent_self
     ```
 
-2. Create and activate virtual environment
+2. Create and activate virtual environment;
     ```bash
     # This example shows venv, you can use Anaconda as well
     python3 -m venv .venv
     source .venv/bin/activate
     ```
 
-3. Install dependencies
+3. Install dependencies;
     ```bash
     pip3 install -r requirements.txt
     ```
 
-4. Add OpenAI base and key to the environment (taking Linux / MacOS as an example):
+4. Add OpenAI base and key to the environment (taking Linux / MacOS as an example);
     ```bash
     echo "export OPENAI_API_KEY='yourkey'" >> ~/.zshrc
     echo "export OPENAI_API_BASE='https://api.openai.com'" >> ~/.zshrc
@@ -47,7 +47,7 @@ There are several files/directories in this repo:
     ```
 
 
-5. See results of all experiments
+5. See results of all experiments;
     ```bash
     python3 main.py
     ```
