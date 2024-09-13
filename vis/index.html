@@ -39,7 +39,7 @@
                 return g1sum-g2sum
             }, d => d.group))
             .range([0, width])
-            .padding(0.5);
+            .padding(0);
 
         const y = d3.scaleLinear()
             .domain([0, 140])
@@ -50,9 +50,9 @@
             .unknown("#ccc");
 
         let values=[5, 10, 15, 20, 25, 30, 35]
-        for (let index = 0; index < values.length; index++) {
-            console.log(d3.color(colorScale(values[index])).formatHex()); 
-        }
+        // for (let index = 0; index < values.length; index++) {
+        //     console.log(d3.color(colorScale(values[index])).formatHex()); 
+        // }
 
         svg.append("g")
             .selectAll()
@@ -118,10 +118,13 @@
         }
         let groupSumNum=groupSum.map(d=>d[1])
         let errorBarDatum={avg:getMean(groupSumNum), sde: getSD(groupSumNum)}
+        console.log(getMean(groupSumNum));
 
         let symbolG=svg.append("g")
             .attr("class", "errorBarG")
 
+
+            // 17.498
         symbolG.append("path")
             .datum(errorBarDatum)
             .attr("d", d=>{
@@ -155,20 +158,20 @@
     // import { csv, json } from 'd3-fetch'
     import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
     Promise.all([
-        // d3.json("json/gpt-4o_neutral_percent_self_0.7_female.csv.json"),
-        // d3.json("json/gpt-4o_neutral_percent_self_0.7_male.csv.json"),
-        d3.json("json/gpt-4o_neutral_percent_self_0.7_None.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_None.csv.json"),
         // d3.json("json/gpt-4o_neutral_percent_self_0.7_poem_None.csv.json"),
         // d3.json("json/gpt-4o_neutral_percent_group_0.7_None.csv.json"),
         // d3.json("json/gpt-4o_neutral_percent_self_0.0_None.csv.json"),
         // d3.json("json/gpt-4o_neutral_percent_self_1.4_None.csv.json"),
         // d3.json("json/gpt-4-1106-preview_neutral_percent_self_0.7_None.csv.json"),
         // d3.json("json/gpt-3.5-turbo-0125_neutral_percent_self_0.7_None.csv.json"),
-        // d3.json("json/gpt-4o_neutral_percent_self_0.7_an_American.csv.json"),
-        // d3.json("json/gpt-4o_neutral_percent_self_0.7_an_Asian_American.csv.json"),
-        // d3.json("json/gpt-4o_neutral_percent_self_0.7_an_African_American.csv.json"),
-        // d3.json("json/gpt-4o_negative_percent_self_0.7_None.csv.json"),
-        // d3.json("json/gpt-4o_positive_percent_self_0.7_None.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_joke_an_American_False.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_joke_an_Asian_American_False.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_joke_an_African_American_False.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_female.csv.json"),
+        // d3.json("json/gpt-4o_neutral_percent_self_0.7_male.csv.json"),
+        d3.json("json/gpt-4o_positive_percent_self_0.7_joke_None_False.csv.json"),
+        d3.json("json/gpt-4o_negative_percent_self_0.7_joke_None_False.csv.json"),
     ])
     .then((data) =>  {
         // data=dataprocessing(data);
@@ -185,12 +188,12 @@
             .data(data).enter()
             .append("g")
                 .attr("transform", (d, i)=>
-                    "translate(" + (margin.left+i*60) + "," + margin.top + ")")
+                    "translate(" + (margin.left+i*100) + "," + margin.top + ")")
                 .each(function(d, i){
                     let node=d3.select(this)
                     let b=i==0?true:false
                     let input=dataprocessing(d)
-                    drawPixelBar(node, input, 270, 200, b)
+                    drawPixelBar(node, input, 270, 80, b)
                 })
     });
 

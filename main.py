@@ -1,4 +1,5 @@
 import os
+import shutil
 import pathlib
 from analysis import * 
 # all parameters
@@ -126,7 +127,7 @@ os.system('clear')
 # diff_demographics(iteration=15, append=True)
 
 # temperatures(iteration=15, append=True)
-# temperatures(iteration=15, append=True, temperature=[1.4])
+# temperatures(iteration=15, append=True, temperature=[0])
 
 # gptmix(iteration=15, append=True)
 
@@ -138,8 +139,8 @@ print("\n\n\n========== Baseline joke =========\n")
 analyze_self_percent_1samp("gpt-4o_neutral_percent_self_0.7_None.csv")
 reformat_json("gpt-4o_neutral_percent_self_0.7_None.csv")
 
-print("\n\n\n========== Baseline joke Revise =========\n")
-analyze_self_percent_1samp("gpt-4o_neutral_percent_self_0.7_joke_None_False.csv")
+# print("\n\n\n========== Baseline joke Revise =========\n")
+# analyze_self_percent_1samp("gpt-4o_neutral_percent_self_0.7_joke_None_False.csv")
 
 print("\n\n\n========== Baseline poem =========\n")
 analyze_self_percent_1samp("gpt-4o_neutral_percent_self_0.7_poem_None.csv")
@@ -147,6 +148,8 @@ reformat_json("gpt-4o_neutral_percent_self_0.7_poem_None.csv")
 
 print("\n\n\n========== Group Rank =========\n")
 analyze_group_rank("gpt-4o_neutral_rank_group_0.7_None.csv")
+shutil.copyfile("gpt-4o_neutral_rank_group_0.7_None.csv", "used/gpt-4o_neutral_rank_group_0.7_None.csv")
+shutil.copyfile("gpt-4o_neutral_rank_group_0.7_None.db", "used/gpt-4o_neutral_rank_group_0.7_None.db")
 
 print("\n\n\n========== Other focus =========\n")
 error_handler("gpt-4o_neutral_percent_group_0.7_None.csv")
@@ -154,24 +157,24 @@ analyze_group_percent("gpt-4o_neutral_percent_group_0.7_None.csv")
 analyze_other_percent_1samp("gpt-4o_neutral_percent_group_0.7_None.csv")
 reformat_json("gpt-4o_neutral_percent_group_0.7_None.csv")
 
-print("\n\n\n========== GPT-4-0613 Other focus =========\n")
-error_handler("gpt-4-0613_neutral_percent_group_0.7_joke_None_False.csv")
-analyze_group_percent("gpt-4-0613_neutral_percent_group_0.7_joke_None_False.csv")
-# cal_group_sum("gpt-4-1106-preview_neutral_percent_group_0.7_joke_None.csv")
+# print("\n\n\n========== GPT-4-0613 Other focus =========\n")
+# error_handler("gpt-4-0613_neutral_percent_group_0.7_joke_None_False.csv")
+# analyze_group_percent("gpt-4-0613_neutral_percent_group_0.7_joke_None_False.csv")
+# # cal_group_sum("gpt-4-1106-preview_neutral_percent_group_0.7_joke_None.csv")
 
-print("\n\n\n========== GPT-4 Other focus =========\n")
-error_handler("gpt-4-1106-preview_neutral_percent_group_0.7_joke_None_False.csv")
-analyze_group_percent("gpt-4-1106-preview_neutral_percent_group_0.7_joke_None_False.csv")
-# cal_group_sum("gpt-4-1106-preview_neutral_percent_group_0.7_joke_None.csv")
+# print("\n\n\n========== GPT-4 Other focus =========\n")
+# error_handler("gpt-4-1106-preview_neutral_percent_group_0.7_joke_None_False.csv")
+# analyze_group_percent("gpt-4-1106-preview_neutral_percent_group_0.7_joke_None_False.csv")
+# # cal_group_sum("gpt-4-1106-preview_neutral_percent_group_0.7_joke_None.csv")
 
-print("\n\n\n========== GPT-3.5-1106 Other focus =========\n")
-error_handler("error0_gpt-3.5-turbo-1106_neutral_percent_group_0.7_joke_None_False.csv")
-analyze_group_percent("error0_gpt-3.5-turbo-1106_neutral_percent_group_0.7_joke_None_False.csv")
-cal_group_sum("error0_gpt-3.5-turbo-1106_neutral_percent_group_0.7_joke_None_False.csv")
+# print("\n\n\n========== GPT-3.5-1106 Other focus =========\n")
+# error_handler("error0_gpt-3.5-turbo-1106_neutral_percent_group_0.7_joke_None_False.csv")
+# analyze_group_percent("error0_gpt-3.5-turbo-1106_neutral_percent_group_0.7_joke_None_False.csv")
+# cal_group_sum("error0_gpt-3.5-turbo-1106_neutral_percent_group_0.7_joke_None_False.csv")
 
-print("\n\n\n========== GPT-3.5 Other focus =========\n")
-error_handler("gpt-3.5-turbo-0125_neutral_percent_group_0.7_joke_None_False.csv")
-analyze_group_percent("gpt-3.5-turbo-0125_neutral_percent_group_0.7_joke_None_False.csv")
+# print("\n\n\n========== GPT-3.5 Other focus =========\n")
+# error_handler("gpt-3.5-turbo-0125_neutral_percent_group_0.7_joke_None_False.csv")
+# analyze_group_percent("gpt-3.5-turbo-0125_neutral_percent_group_0.7_joke_None_False.csv")
 # cal_group_sum("gpt-3.5-turbo-0125_neutral_percent_group_0.7_joke_None.csv")
 
 # print("\n\n\n========== Llama 2 Group Percent =========\n")
@@ -181,19 +184,21 @@ analyze_group_percent("gpt-3.5-turbo-0125_neutral_percent_group_0.7_joke_None_Fa
 print("\n\n\n========== Compare Self & Group Percent =========\n")
 analyze_self_percent_ind("gpt-4o_neutral_percent_self_0.7_None.csv", "gpt-4o_neutral_percent_group_0.7_None.csv")
 
-print("\n\n\n========== Pos and Neg =========\n")
-analyze_self_percent_ind("gpt-4o_positive_percent_self_0.7_None.csv", "gpt-4o_negative_percent_self_0.7_None.csv")
-reformat_json("gpt-4o_negative_percent_self_0.7_None.csv")
+# print("\n\n\n========== Pos and Neg =========\n")
+# analyze_self_percent_ind("gpt-4o_positive_percent_self_0.7_None.csv", "gpt-4o_negative_percent_self_0.7_None.csv")
+# reformat_json("gpt-4o_negative_percent_self_0.7_None.csv")
 print("\n\n\n========== joke Pos revised =========\n")
 analyze_self_percent_1samp("gpt-4o_positive_percent_self_0.7_joke_None_False.csv")
 print("\n\n\n========== joke Neg revised =========\n")
 analyze_self_percent_1samp("gpt-4o_negative_percent_self_0.7_joke_None_False.csv")
 print("\n\n\n===== compare Pos and Neg revised =====\n")
 analyze_self_percent_ind("gpt-4o_positive_percent_self_0.7_joke_None_False.csv", "gpt-4o_negative_percent_self_0.7_joke_None_False.csv")
-print("\n\n\n===== compare Pos revised and baseline =====\n")
-analyze_self_percent_ind("gpt-4o_positive_percent_self_0.7_joke_None_False.csv", "gpt-4o_neutral_percent_self_0.7_None.csv")
-print("\n\n\n===== compare Neg revised and baseline =====\n")
-analyze_self_percent_ind("gpt-4o_negative_percent_self_0.7_joke_None_False.csv", "gpt-4o_neutral_percent_self_0.7_None.csv")
+# print("\n\n\n===== compare Pos revised and baseline =====\n")
+# analyze_self_percent_ind("gpt-4o_positive_percent_self_0.7_joke_None_False.csv", "gpt-4o_neutral_percent_self_0.7_None.csv")
+# print("\n\n\n===== compare Neg revised and baseline =====\n")
+# analyze_self_percent_ind("gpt-4o_negative_percent_self_0.7_joke_None_False.csv", "gpt-4o_neutral_percent_self_0.7_None.csv")
+reformat_json("gpt-4o_negative_percent_self_0.7_joke_None_False.csv")
+reformat_json("gpt-4o_positive_percent_self_0.7_joke_None_False.csv")
 
 print("\n\n\n========== American =========\n")
 analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_joke_an_American_False.csv')
@@ -234,34 +239,31 @@ oneway_anova('gpt-4o_neutral_percent_self_0.0_None.csv','gpt-4o_neutral_percent_
 # print("\n\n\n========== LLAMA-3-70b =========\n")
 # analyze_self_percent_1samp('Llama-3-70b-chat-hf_neutral_percent_self_0.7_None.csv')
 
-# print("\n\n\n========== gpt-3.5-turbo-0125 =========\n")
-# # analyze_self_percent_1samp('gpt-3.5-turbo-0125_neutral_percent_self_0.7_None.csv')
-# analyze_group_percent("gpt-3.5-turbo-0125_neutral_percent_group_0.7_joke_None.csv")
-# reformat_json('gpt-3.5-turbo-0125_neutral_percent_group_0.7_joke_None.csv')
+print("\n\n\n========== gpt-3.5-turbo-0125 =========\n")
+analyze_self_percent_1samp('gpt-3.5-turbo-0125_neutral_percent_self_0.7_None.csv')
+reformat_json('gpt-3.5-turbo-0125_neutral_percent_self_0.7_None.csv')
 
-# print("\n\n\n========== gpt-4-1106-preview =========\n")
-# # analyze_self_percent_1samp('gpt-4-1106-preview_neutral_percent_self_0.7_None.csv')
-# analyze_group_percent("gpt-4-1106-preview_neutral_percent_group_0.7_joke_None_False.csv")
-# reformat_json('gpt-4-1106-preview_neutral_percent_group_0.7_joke_None_False.csv')
+print("\n\n\n========== gpt-4-1106-preview =========\n")
+analyze_self_percent_1samp('gpt-4-1106-preview_neutral_percent_self_0.7_None.csv')
+reformat_json('gpt-4-1106-preview_neutral_percent_self_0.7_None.csv')
 
 print("\n\n\n========== gpt-4o =========\n")
 analyze_self_percent_1samp('gpt-4o_neutral_percent_self_0.7_None.csv')
-reformat_json('gpt-4o_neutral_percent_self_0.7_None.csv')
 
 
 print("\n\n\n========== Compare GPT 4.0 & GPT 4o =========\n")
 analyze_self_percent_ind("gpt-4o_neutral_percent_self_0.7_None.csv", "gpt-4-1106-preview_neutral_percent_self_0.7_None.csv")
 
-print("\n\n\n========== Next team member=========\n")
-analyze_next_percent_1samp("gpt-4o_neutral_percent_other_0.7_None.csv")
+# print("\n\n\n========== Next team member=========\n")
+# analyze_next_percent_1samp("gpt-4o_neutral_percent_other_0.7_None.csv")
 
 print("\n\n\n========== Independent Agent Models =========\n")
 error_handler("gptmix_neutral_percent_self_0.7_None.csv")
 gptmix_stat("gptmix_neutral_percent_self_0.7_None.csv")
-# gptmix_reformat_json("gptmix_neutral_percent_self_0.7_None.csv")
+gptmix_reformat_json("gptmix_neutral_percent_self_0.7_None.csv")
 # gptmix_ques("revised_gptmix_neutral_percent_self_0.7_None_questionnaire.csv", "revised_gptmix_neutral_percent_self_0.7_None.csv")
 
 
 print("\n\n\n========== COT intervention =========\n")
 analyze_self_percent_ind("gpt-4o_neutral_percent_self_0.7_joke_None_True.csv", "gpt-4o_neutral_percent_self_0.7_None.csv")
-# reformat_json("gpt-4o_neutral_percent_self_0.7_None.csv")
+reformat_json("gpt-4o_neutral_percent_self_0.7_joke_None_True.csv")

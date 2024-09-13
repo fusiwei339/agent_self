@@ -98,6 +98,7 @@
             let g=series[i][1]
             errorBarData.push({model: series[i][0], avg: d3.mean(g, d=>d.percentage), sde: d3.deviation(g, d=>d.percentage)})
         }
+        console.log(errorBarData);
         
         let symbolG=svg.append("g")
             .attr("class", "errorBarG")

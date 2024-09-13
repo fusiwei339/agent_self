@@ -12,9 +12,12 @@ import random
 from statistics import mean, stdev
 from math import sqrt
 import pathlib
+import shutil
 
 def reformat_json(filename):
     pos=pd.read_csv(filename, header=0)
+    pos.to_csv("used/"+filename, index=False)
+    shutil.copyfile(filename.replace("csv", "db"), "used/"+filename.replace("csv", "db"))
     pos=pos.query("kind != 'peer'")
 
     nrow, ncol=pos.shape
@@ -29,7 +32,7 @@ def reformat_json(filename):
             pRow[names[j]]=pos.loc[pos.index[idx],"percentage"]
         summary.append(pRow)
 
-    # pd.DataFrame(summary).to_json("json/"+filename+".json", orient='records')
+    pd.DataFrame(summary).to_json("vis/json/"+filename+".json", orient='records')
 
 def reformat_summary(inputfile):
     df=cal_group_self_sum(inputfile, "self")
@@ -38,6 +41,8 @@ def reformat_summary(inputfile):
 def gptmix_reformat_json(filename):
     mix=pd.read_csv(filename, header=0)
     mix=mix.query("kind != 'peer'")
+    mix.to_csv("used/"+filename, index=False)
+    shutil.copyfile(filename.replace("csv", "db"), "used/"+filename.replace("csv", "db"))
 
     nrow, ncol=mix.shape
     names=["gpt-3.5-turbo", "gpt-4o", "gpt-4-0613","gpt-4-turbo-preview", "gpt-3.5-turbo-1106"]
@@ -52,7 +57,7 @@ def gptmix_reformat_json(filename):
             pRow[names[j]]=mix.loc[mix.index[idx],"percentage"]
         summary.append(pRow)
 
-    pd.DataFrame(summary).to_json(filename+".json", orient='records')
+    pd.DataFrame(summary).to_json("vis/json/"+filename+".json", orient='records')
 
 
 # # analyze rating file
@@ -251,6 +256,15 @@ def gptmix_stat(file):
         print(obj, "\n")
         print("cohens_d = ", cohensd)
 
+        ret={"model1":model1,"model2":model2,"cohens_d":'{0:.2f}'.format(cohensd), "t":'{0:.2f}'.format(obj[0]), "p":'{0:.2e}'.format(obj[1])}
+        filename="gptmix_5b_table.csv"
+        # pathlib.Path(filename).unlink(missing_ok=True)
+        if not os.path.isfile(filename):
+            pd.json_normalize(ret).to_csv(filename, index=False)   
+        else:
+            pd.json_normalize(ret).to_csv(filename, mode='a', index=False, header=False)
+
+
 
     df=base.groupby("model")["percentage"].mean()
     print(df)
@@ -264,10 +278,10 @@ def gptmix_stat(file):
         cohensd=cohens_d(target_data['percentage'], target_data["control"])
         print("cohens_d = ", cohensd, "\n")
 
-    compareAB("gpt-3.5-turbo-1106", "gpt-3.5-turbo")
-    compareAB("gpt-3.5-turbo", "gpt-4-0613")
-    compareAB("gpt-4-0613", "gpt-4-turbo-preview")
-    compareAB("gpt-4-turbo-preview", "gpt-4o")
+    for m1 in models:
+        for m2 in models:
+            if m1!=m2:
+                compareAB(m1, m2)
 
 def gptmix_ques(file, evaluation_csv=""):
     base=pd.read_csv(file, header=0)
