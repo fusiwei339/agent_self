@@ -6,7 +6,7 @@ from autogen.coding import LocalCommandLineCodeExecutor
 from autogen.graph_utils import visualize_speaker_transitions_dict
 import argparse
 
-from prompt import task_prompt, eval_prompt, eval_prompt_next
+from prompt import task_prompt, eval_prompt 
 from utils import *
 
 def str_to_bool(value):
@@ -18,11 +18,10 @@ def str_to_bool(value):
         return True
     raise ValueError(f'{value} is not a valid boolean value')
 
-
 parser = argparse.ArgumentParser()
-parser.add_argument("--temperature", type=float, default=1.0)
+parser.add_argument("--temperature", type=float, default=0.7)
 parser.add_argument("--iteration", type=int, default=50)
-parser.add_argument("--lean", type=str, default="positive")
+parser.add_argument("--lean", type=str, default="neutral")
 parser.add_argument("--task", type=str, default="percent")
 parser.add_argument("--focus", type=str, default="self")
 parser.add_argument("--model", type=str, default="gpt-4o")
@@ -45,13 +44,13 @@ print(args)
 def get_model():
     conf_list=[{"model":model_name}]
     if model_name.startswith("gpt"):
-        conf_list[0]["base_url"]="https://api.chatanywhere.com.cn"
-        conf_list[0]["api_key"]="sk-CUIdUOkG7Xl3lRF2Lfg4YULUew1dRRy3cLtjNB29vtwXpsGR"
+        conf_list[0]["base_url"]=os.environ["OPENAI_API_BASE"]
+        conf_list[0]["api_key"]=os.environ["OPENAI_API_KEY"]
         conf_list[0]["temperature"]=temperature
         ret={"config_list": conf_list, "cache_seed":None}
     else:
         conf_list[0]["api_type"]= "together"
-        conf_list[0]["api_key"]="794de0b246a52737a9956e719bc1ddd071d04b66cd346e31c951cc1cf1800b68"
+        conf_list[0]["api_key"]=os.environ["TOGETHER_API_KEY"]
         ret={"config_list": conf_list, "cache_seed":None, "temperature": temperature}
     return ret 
 
@@ -70,18 +69,11 @@ def get_eval_prompt(focus, task, lean, j, cot):
         if cot:
             return eval_prompt["_".join([focus, task, lean])].format(topic)+cot_formatter
         return eval_prompt["_".join([focus, task, lean])].format(topic)+formatter
-    elif focus=="other":
-        return eval_prompt["_".join([focus, task])](j)
     else:
         return eval_prompt["_".join([focus, task])]
 
-
 names=["One", "Two", "Three", "Four", "Five"]
 filename_base="_".join(map(str,[os.path.basename(model_name), lean, task, focus, temperature, topic, demographics.replace(" ", "_"), cot]))
-
-if model_name.startswith("gpt"):
-    logging_session_id = autogen.runtime_logging.start(config={"dbname": filename_base+".db"})
-    print("Logging session ID: " + str(logging_session_id))
 
 def create_agent(name):
     return AssistantAgent(
@@ -90,7 +82,7 @@ def create_agent(name):
         llm_config=get_model(),
     )  
 
-for i in range(iteration):
+for it in range(iteration):
 
     agents=[create_agent(i) for i in names]
 
@@ -115,9 +107,6 @@ for i in range(iteration):
 
     task_chat_result=initializer.initiate_chat(managerPlay, message=task_prompt[topic], cache=None)
 
-    if model_name.startswith("meta"):
-        save_to_json(task_chat_result.chat_history, filename_base+".json")
-
     initializer2 = UserProxyAgent(
         name="init2",
         code_execution_config=False,
@@ -133,8 +122,3 @@ for i in range(iteration):
         )
 
         save_to_csv(eval_chat_result.chat_history[-1]["content"], names[j], filename_base+".csv")
-        if model_name.startswith("meta"):
-            save_to_json(eval_chat_result.chat_history, filename_base+".json")
-
-if model_name.startswith("gpt"):
-    autogen.runtime_logging.stop()

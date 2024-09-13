@@ -54,6 +54,9 @@ agent/
 .vscode/
 
 # data file
-*.csv
 *.json
 *.db
+
+__pycache__/
+vis/
+used/

@@ -6,13 +6,13 @@ from autogen.coding import LocalCommandLineCodeExecutor
 from autogen.graph_utils import visualize_speaker_transitions_dict
 import argparse
 
-from prompt import task_prompt, eval_prompt, eval_prompt_next
+from prompt import task_prompt, eval_prompt
 from utils import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--temperature", type=float, default=1.0)
+parser.add_argument("--temperature", type=float, default=0.7)
 parser.add_argument("--iteration", type=int, default=50)
-parser.add_argument("--lean", type=str, default="positive")
+parser.add_argument("--lean", type=str, default="neutral")
 parser.add_argument("--task", type=str, default="percent")
 parser.add_argument("--focus", type=str, default="self")
 parser.add_argument("--model", type=str, default="gpt-4o")
@@ -28,8 +28,8 @@ temperature=args.temperature
 demographics =args.demographics
 
 default_model={"config_list": [{
-                "base_url":"https://api.chatanywhere.com.cn",
-                "api_key":"sk-CUIdUOkG7Xl3lRF2Lfg4YULUew1dRRy3cLtjNB29vtwXpsGR",
+                "base_url":os.environ["OPENAI_API_BASE"],
+                "api_key":os.environ["OPENAI_API_KEY"],
                 "temperature":temperature,
                 "model":"gpt-4o", 
             }], "cache_seed":None}
@@ -48,8 +48,6 @@ def get_eval_prompt(focus, task, lean, j):
         return eval_prompt["_".join([focus, task])](j)
     else:
         return eval_prompt["_".join([focus, task])]
-
-
 
 for it in range(iteration):
 
@@ -71,8 +69,8 @@ for it in range(iteration):
             name=name,
             system_message=get_demographics(name),
             llm_config={"config_list": [{
-                "base_url":"https://api.chatanywhere.com.cn",
-                "api_key":"sk-CUIdUOkG7Xl3lRF2Lfg4YULUew1dRRy3cLtjNB29vtwXpsGR",
+                "base_url":os.environ["OPENAI_API_BASE"],
+                "api_key":os.environ["OPENAI_API_KEY"],
                 "temperature":temperature,
                 "model":model_obj[name], 
             }], "cache_seed":None}
@@ -117,13 +115,4 @@ for it in range(iteration):
 
         save_to_csv_gptmix(eval_chat_result.chat_history[-1]["content"], names[j], filename_base+".csv", model_obj[names[j]], it)
 
-        # questions=task_prompt["questionnaire_Q"]
-        # instruction=task_prompt["questionnaire_instruct"]
-        # for q in questions:
-        #     q_result=initializer2.initiate_chat(
-        #         agents[j],
-        #         message=instruction+q
-        #     )
-        #     save_to_csv_gptmix(q_result.chat_history[-1]["content"], names[j], filename_base+"_questionnaire"+".csv", model_obj[names[j]],it)
-        
     autogen.runtime_logging.stop()

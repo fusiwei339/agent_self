@@ -20,6 +20,7 @@ def save_to_json(entry, filename):
             f.write(json.dumps(feeds, indent=2))
 
 def save_to_csv(summary, name, filename):
+    path="data/"
     jsonstr=parseJsonStr(summary)
     if not jsonstr:
         return None
@@ -30,10 +31,10 @@ def save_to_csv(summary, name, filename):
     df["rater"]=name
     df["kind"]=np.where(df["name"]==name, "self", "peer")
 
-    if not os.path.isfile(filename):
-        df.to_csv(filename, index=False)   
+    if not os.path.isfile(path+filename):
+        df.to_csv(path+filename, index=False)   
     else:
-        df.to_csv(filename, mode='a', index=False, header=False)
+        df.to_csv(path+filename, mode='a', index=False, header=False)
 
 def save_to_csv_gptmix(summary, name, filename, model, *args):
     jsonstr=parseJsonStr(summary)
@@ -49,29 +50,11 @@ def save_to_csv_gptmix(summary, name, filename, model, *args):
     if len(args)>0:
         df["iter"]=args[0]
 
-    if not os.path.isfile(filename):
-        df.to_csv(filename, index=False)   
+    path="data/"
+    if not os.path.isfile(path+filename):
+        df.to_csv(path+filename, index=False)   
     else:
-        df.to_csv(filename, mode='a', index=False, header=False)
-
-# def save_to_csv_questionnaire(summary, name, filename, model):
-#     jsonstr=parseJsonStr(summary)
-#     if not jsonstr:
-#         return None
-#     if isinstance(jsonstr, dict):
-#         jsonstr=[jsonstr] 
-
-#     df=pd.DataFrame(jsonstr)
-#     df["rater"]=name
-#     df["kind"]=np.where(df["name"]==name, "self", "peer")
-#     df["model"]=model
-
-#     if not os.path.isfile(filename):
-#         df.to_csv(filename, index=False)   
-#     else:
-#         df.to_csv(filename, mode='a', index=False, header=False)
-
-
+        df.to_csv(path+filename, mode='a', index=False, header=False)
 
 def parseJsonStr(result_str):
     if "```json" in result_str:
@@ -89,11 +72,3 @@ def parseJsonStr(result_str):
     except ValueError:
         print('invalid string:\n\n'+ret)
     return ret
-
-Authority=[1,8,10,11,12,32,33,36]
-Exhibitionism=[2,3,7,20,28,30,38]
-Superiority=[4,9,26,40]
-Entitlement=[5,14,18,24,25,27]
-Exploitativeness=[6,13,16,23,35]
-Self_Sufficiency=[17,21,22,31,34,39]
-one=[1, 1, 1, 2, 1, 2, 2, 1, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 2, 1, 2, 1, 2, 2]
