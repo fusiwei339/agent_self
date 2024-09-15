@@ -36,7 +36,13 @@ There are several files/directories in this repo:
     pip3 install -r requirements.txt
     ```
 
-4. Add OpenAI base and key to the environment (taking Linux / MacOS as an example);
+
+4. See statistical results of all experiments;
+    ```bash
+    python3 main.py
+    ```
+
+5. If you want to replicate group conversation, firstly add OpenAI base and key to the environment (taking Linux / MacOS as an example);
     ```bash
     echo "export OPENAI_API_KEY='yourkey'" >> ~/.zshrc
     echo "export OPENAI_API_BASE='https://api.openai.com'" >> ~/.zshrc
@@ -46,13 +52,7 @@ There are several files/directories in this repo:
     echo $OPENAI_API_BASE
     ```
 
-
-5. See results of all experiments;
-    ```bash
-    python3 main.py
-    ```
-
-6. You can edit main.py (from line 100 to line 172) to run your own experiments. 
+6. Secondly, edit [main.py](main.py) (from line 100 to line 172) to configure and run your own experiments. 
 
 ## Contact 
 TBD
