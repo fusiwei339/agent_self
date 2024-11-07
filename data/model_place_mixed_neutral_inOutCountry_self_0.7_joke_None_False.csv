@@ -1,5 +1,0 @@
-selection,rater,model,iter
-"[""One"", ""Two""]",One,openai,0
-"[""One"", ""Three""]",Two,llama,0
-"[""Three"", ""Four""]",Three,sensechat,0
-"[""Four"", ""Three""]",Four,qwen,0

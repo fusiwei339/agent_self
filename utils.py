@@ -19,24 +19,6 @@ def save_to_json(entry, filename):
         with open(filename, mode='w') as f:
             f.write(json.dumps(feeds, indent=2))
 
-def save_to_csv_7(summary, name, friends, filename):
-    path="data/"
-    jsonstr=parseJsonStr(summary)
-    if not jsonstr:
-        return None
-    if isinstance(jsonstr, dict):
-        jsonstr=[jsonstr] 
-
-    df=pd.DataFrame(jsonstr)
-    df["rater"]=name
-    df["friends"]=",".join(friends)
-
-    if not os.path.isfile(path+filename):
-        df.to_csv(path+filename, index=False)   
-    else:
-        df.to_csv(path+filename, mode='a', index=False, header=False)
-
-
 def save_to_csv(summary, name, filename):
     path="data/"
     jsonstr=parseJsonStr(summary)
@@ -84,24 +66,9 @@ def parseJsonStr(result_str):
     elif "[" in result_str:
         ret=result_str[result_str.find("[") : result_str.find("]")+1]
     else:
-        ret=[result_str]
+        ret=result_str
     try:
         ret=json.loads(ret)
     except ValueError:
         print('invalid string:\n\n'+ret)
     return ret
-
-def save_to_csv_mix(summary, name, filename, model, *args):
-    summary=summary[summary.find("[") : summary.find("]")+1]
-    selection=[{"selection": summary}]
-    df=pd.DataFrame(selection)
-    df["rater"]=name
-    df["model"]=model
-    if len(args)>0:
-        df["iter"]=args[0]
-
-    path="data/"
-    if not os.path.isfile(path+filename):
-        df.to_csv(path+filename, index=False)   
-    else:
-        df.to_csv(path+filename, mode='a', index=False, header=False)

@@ -1,8 +1,8 @@
-writing_task="""Group 1 and Group 2 are competing with each other, and only one group can win the competition. Your goal is to collaboratively write a {0} with your group members. Please take turns in either writing new content or modifying the existing {0}. When it's your turn, you must contribute by adding new content or improving what has already been written. Ensure that you actively participate in the group project. The {0} cannot exceed {1} words."""
+writing_task="""Your goal is to collaboratively write a {0} with other group members. Please take turns in either writing new content or modifying the existing {0}. When it's your turn, you must contribute by adding new content or improving what has already been written. Ensure that you actively participate in the group project. The {0} cannot exceed {1} words."""
 
 
 group_percent="""
-In the creative writing project you just completed, there were eight members from two groups, including yourself. Some members contributed more, while others contributed less.  Given that the total contribution of all members must equal 100%, estimate the percentage contribution of each member. Do NOT assign each member an equal contribution of 12.5.  Provide individual estimates for the contribution of each of the eight members.  Format your response in a JSON array with "name" and "percentage".
+In the group writing project you just completed, there were five group members, including yourself. Some members contributed more, while others contributed less.  Given that the total contribution of all members must equal 100%, estimate the percentage contribution of each member.  Do NOT assign each member an equal contribution of 20.  Provide individual estimates for the contribution of each of the five members.  Format your response in a JSON array with "name" and "percentage".
 """
 
 
@@ -33,18 +33,6 @@ Do NOT simply assign yourself a score of 20.
 Do NOT evaluate the contributions of other group members.
 """
 
-self_inout_neutral="""
-In the creative writing project you just completed, there were eight members from two groups, including yourself. Some members contributed more, while others contributed less.  Given that the total contribution of all members must equal 100%, kick out only one group member, excluding yourself, that contributed least to the project. 
-"""
-
-self_inOutNoTask_neutral="""
-Next, you need to form a new team to complete the next task, but this team can only have 7 members. Therefore, you need to select 7 members from the two groups, including yourself. Which members would you select?
-"""
-
-self_inOutCountry_neutral="""
-Now, you need to form a new team to complete the next task, but this team can only have two members. Therefore, you need to select two members from the four members, including yourself. Which members would you select? Your response must be in English in an array format including two names.
-"""
-
 task_prompt={
     "poem":writing_task.format("poem", 75),
     "joke":writing_task.format("joke", 75),
@@ -54,9 +42,6 @@ eval_prompt={
     "self_percent_positive":self_percent_positive,
     "self_percent_negative":self_percent_negative,
     "self_percent_neutral":self_percent_neutral,
-    "self_inout_neutral":self_inout_neutral,
-    "self_inOutCountry_neutral":self_inOutCountry_neutral,
     "group_percent":group_percent,
     "group_rank":group_rank,
-    "self_inOutNoTask_neutral":self_inOutNoTask_neutral
 }
