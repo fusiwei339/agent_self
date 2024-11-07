@@ -14,6 +14,91 @@ from math import sqrt
 import pathlib
 import shutil
 
+def in_out_country(filename):
+    base=pd.read_csv(filename, header=0)
+    nrow, ncol=base.shape
+    block=4
+    rounds=int(nrow/(block))
+    country={
+        "llama":"America",
+        "sensechat":"China",
+        "qwen":"China",
+        "openai":"America"
+    }
+
+    error=[]
+    for i in range(int(rounds)):
+        p=base.iloc[i*block:i*block+block]
+        for j in range(int(block)):
+            me=p.iloc[j]["rater"]
+            if p.iloc[j]["selection"].find(me)==-1:
+                error.append([p.iloc[j]["model"], p.iloc[j]["iter"]])
+
+    print(error)
+
+
+def in_out_analysis(filename):
+    base=pd.read_csv(filename, header=0)
+    nrow, ncol=base.shape
+    block=8
+    summary=[]
+    rounds=nrow/(block*block)
+    names=["One", "Two", "Three","Four","Five", "Six", "Seven", "Eight"]
+
+    for i in range(int(rounds)):
+        for j in range(int(block)):
+            pRow={"round":i}
+            pRow["name"]=names[j]
+            p=base.iloc[i*block*block+j*block:i*block*block+j*block+block]
+            g1=p.iloc[0:4]
+            g2=p.iloc[4:8]
+            if j<4:
+                g1=g1.query("kind != 'self'")
+                pRow["in_group_avg"]=g1["percentage"].mean()
+                pRow["out_group_avg"]=g2["percentage"].mean()
+            else:
+                g2=g2.query("kind != 'self'")
+                pRow["in_group_avg"]=g2["percentage"].mean()
+                pRow["out_group_avg"]=g1["percentage"].mean()
+            summary.append(pRow)
+            
+    df=pd.DataFrame(summary)
+    df2=df.groupby(by='round', as_index=False)[["in_group_avg", "out_group_avg"]].mean()
+    print(df2.describe())
+    ret=stats.ttest_rel(df2["in_group_avg"], df2["out_group_avg"]) 
+    print(ret)
+    cohensd=cohens_d(df2["in_group_avg"], df2["out_group_avg"])
+    print("cohens_d = ", cohensd)
+
+def in_out_regroup(filename):
+    import ast
+    base=pd.read_csv(filename, header=0)
+    nrow, ncol=base.shape
+    block=8
+    summary=[]
+    rounds=int(nrow/(block))
+    names=["One", "Two", "Three","Four","Five", "Six", "Seven", "Eight"]
+
+    groups={}
+    for i, n in enumerate(names):
+        groups[n]="Group 1" if i<4 else "Group 2"
+
+    ret=[]
+    for i in range(rounds):
+        outgroup=0
+        for j in range(block):
+            idx=i*block+j
+            rater=base.iloc[idx]["rater"]
+            thename=ast.literal_eval(base.iloc[idx]["names"])
+            friends=base.iloc[idx]["friends"].split(",")
+            if set(friends)<=set(thename):
+                outgroup+=1
+        ret.append(outgroup/block) 
+
+    ret=pd.Series(ret)
+    print(ret.describe())
+
+
 def reformat_json(filename):
     pos=pd.read_csv(filename, header=0)
     pos=pos.query("kind != 'peer'")

@@ -1,4 +1,5 @@
 import pandas as pd
+import random
 import autogen
 from autogen import UserProxyAgent
 from autogen import ConversableAgent, AssistantAgent
@@ -26,6 +27,7 @@ parser.add_argument("--task", type=str, default="percent")
 parser.add_argument("--focus", type=str, default="self")
 parser.add_argument("--model", type=str, default="gpt-4o")
 parser.add_argument("--topic", type=str, default="joke")
+parser.add_argument("--prefix", type=str, default="")
 parser.add_argument("--demographics", type=str, default="None")
 parser.add_argument("--cot", type=str_to_bool, default=False)
 args = parser.parse_args()
@@ -35,6 +37,7 @@ lean = args.lean
 task = args.task
 focus = args.focus
 topic = args.topic
+prefix = args.prefix
 iteration = args.iteration
 temperature=args.temperature
 demographics =args.demographics
@@ -44,8 +47,8 @@ print(args)
 def get_model():
     conf_list=[{"model":model_name}]
     if model_name.startswith("gpt"):
-        conf_list[0]["base_url"]=os.environ["OPENAI_API_BASE"]
-        conf_list[0]["api_key"]=os.environ["OPENAI_API_KEY"]
+        conf_list[0]["base_url"]="https://xiaoai.plus/v1"
+        conf_list[0]["api_key"]="sk-tqPuK5wogqjQ8fodD044AcDbF50845449f94A62aB16f96A8"
         conf_list[0]["temperature"]=temperature
         ret={"config_list": conf_list, "cache_seed":None}
     else:
@@ -54,26 +57,21 @@ def get_model():
         ret={"config_list": conf_list, "cache_seed":None, "temperature": temperature}
     return ret 
 
+def random_split(items, size):
+    sample = set(random.sample(items, size))
+    return sorted(sample), sorted(set(items) - sample)
 
-def get_demographics(name):
-    base="""Your name is "{0}". {1}You are part of a group that includes "One", "Two", "Three", "Four" and "Five". When providing your input: Speak only on your own behalf. Keep your response concise."""
-    if demographics=="None":
-        return base.format(name, "")
-    return base.format(name, "You are "+demographics+". ")
 
 
 def get_eval_prompt(focus, task, lean, j, cot):
-    formatter="""Format your response in a JSON array with "name" and "percentage"."""
-    cot_formatter="""Let's think step by step. Output your thought first, and then format your response in a JSON array with "name" and "percentage"."""
+    formatter="""Output their names in a JSON object: \{names\:[]\}."""
     if focus=="self":
-        if cot:
-            return eval_prompt["_".join([focus, task, lean])].format(topic)+cot_formatter
         return eval_prompt["_".join([focus, task, lean])].format(topic)+formatter
     else:
         return eval_prompt["_".join([focus, task])]
 
-names=["One", "Two", "Three", "Four", "Five"]
-filename_base="_".join(map(str,[os.path.basename(model_name), lean, task, focus, temperature, topic, demographics.replace(" ", "_"), cot]))
+
+filename_base="_".join(map(str,[prefix, os.path.basename(model_name), lean, task, focus, temperature, topic, demographics.replace(" ", "_"), cot]))
 
 def create_agent(name):
     return AssistantAgent(
@@ -82,7 +80,35 @@ def create_agent(name):
         llm_config=get_model(),
     )  
 
+logging_session_id = autogen.runtime_logging.start(config={"dbname": "data/"+filename_base+".db"})
+print("Logging session ID: " + str(logging_session_id))
+
 for it in range(iteration):
+    names=["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight"]
+    group1, group2=random_split(names, 4)
+
+    def get_demographics(name):
+        groups=[{"name": "Group 1", "members": group1}, {"name": "Group 2", "members": group2}]
+        group={}
+        other={}
+        for g in groups:
+            if name in g["members"]:
+                group=g
+            else:
+                other=g
+
+        k=random.randint(0, 1)
+        b0="""Your name is "{0}". {1}There are two groups. """
+        b1="You are in {2} that includes four group members: {3}. " 
+        b2="{5} includes four members, {4}. " 
+        b3="When providing your input: Speak only on your own behalf. Keep your response concise."
+        base=b0+b1+b2+b3 if k==1 else b0+b2+b1+b3
+
+        if demographics=="None":
+            return base.format(name, "", group["name"], ", ".join(group["members"]), ", ".join(other["members"]), other["name"])
+        return base.format(name, "You are "+demographics+". ", group["name"], ", ".join(group["members"]), ", ".join(other["members"]), other["name"])
+
+
 
     agents=[create_agent(i) for i in names]
 
@@ -105,7 +131,7 @@ for it in range(iteration):
         llm_config=get_model()
     )
 
-    task_chat_result=initializer.initiate_chat(managerPlay, message=task_prompt[topic], cache=None)
+    # task_chat_result=initializer.initiate_chat(managerPlay, message=task_prompt[topic], cache=None)
 
     initializer2 = UserProxyAgent(
         name="init2",
@@ -118,7 +144,10 @@ for it in range(iteration):
         eval_chat_result=initializer2.initiate_chat(
             agents[j], 
             message=get_eval_prompt(focus, task, lean, j, cot),
-            carryover=managerPlay.messages_to_string(task_chat_result.chat_history)
+            # carryover=managerPlay.messages_to_string(task_chat_result.chat_history)
         )
+        friends=group1 if names[j] in group1 else group2
 
-        save_to_csv(eval_chat_result.chat_history[-1]["content"], names[j], filename_base+".csv")
+        save_to_csv_7(eval_chat_result.chat_history[-1]["content"], names[j], friends, filename_base+".csv")
+
+autogen.runtime_logging.stop()

@@ -6,14 +6,14 @@ from analysis import *
 # fullpath="/Users/siwei/repos/agent_self/"
 fullpath=""
 
-def baseline(iteration=50, lean="neutral", temperature=0.7, focus="self", task="percent", model="gpt-4o", demographics="None", append=True, topic="joke", cot=False):
-    filename_base="_".join(map(str,[os.path.basename(model), lean, task, focus, temperature, topic, demographics, cot]))
+def baseline(iteration=50, lean="neutral", temperature=0.7, focus="self", task="percent", model="gpt-4o", demographics="None", append=True, topic="joke", cot=False, prefix=""):
+    filename_base="_".join(map(str,[prefix, os.path.basename(model), lean, task, focus, temperature, topic, demographics, cot]))
     print(filename_base)
     if(not append):
         pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
         pathlib.Path(filename_base+".db").unlink(missing_ok=True)
 
-    os.system("python3 "+fullpath+"expt.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --topic={} --demographics={} --cot={}".format(lean,model,focus,task,iteration, temperature, topic, demographics, cot))
+    os.system("python3 "+fullpath+"expt.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --topic={} --demographics={} --cot={} --prefix={}".format(lean,model,focus,task,iteration, temperature, topic, demographics, cot, prefix))
 
     return filename_base+".csv"
 
@@ -84,15 +84,49 @@ def models(iteration=50, lean="neutral", temperature=0.7, focus="group", task="p
 
         os.system("python3 "+fullpath+"expt.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={} --topic={}".format(lean,m,focus,task,iteration,temperature, demographics, topic))
 
-def gptmix(iteration=50, lean="neutral", temperature=0.7, focus="self", task="percent", model="gptmix", demographics="None", append=True):
+def gptmix(iteration=50, lean="neutral", temperature=0.7, focus="self", task="percent", model="gptmix", demographics="None", append=True, prefix=""):
 
-    filename_base="_".join(map(str,[model, lean, task, focus, temperature, demographics]))
+    filename_base="_".join(map(str,[prefix, model, lean, task, focus, temperature, demographics]))
     if(not append):
         pathlib.Path(filename_base+".csv").unlink(missing_ok=True)
         pathlib.Path(filename_base+"_questionnaire"+".csv").unlink(missing_ok=True)
         pathlib.Path(filename_base+".db").unlink(missing_ok=True)
 
-    os.system("python3 "+fullpath+"expt5b.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={}".format(lean,model,focus,task,iteration,temperature, demographics))
+    os.system("python3 "+fullpath+"expt5b.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --demographics={} --prefix={}".format(lean,model,focus,task,iteration,temperature, demographics, prefix))
+
+
+def expt7(iteration=50, lean="neutral", temperature=0.7, focus="self", task="inOutNoTask", model="gpt-4o", demographics="None", append=True, topic="joke", cot=False, prefix=""):
+    filename_base="_".join(map(str,[prefix, os.path.basename(model), lean, task, focus, temperature, topic, demographics, cot]))
+    print(filename_base)
+    if(not append):
+        pathlib.Path("data/"+filename_base+".csv").unlink(missing_ok=True)
+        pathlib.Path("data/"+filename_base+".db").unlink(missing_ok=True)
+
+    os.system("python3 "+fullpath+"expt7.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --topic={} --demographics={} --cot={} --prefix={}".format(lean,model,focus,task,iteration, temperature, topic, demographics, cot, prefix))
+
+    return filename_base+".csv"
+
+def expt7noTask(iteration=50, lean="neutral", temperature=0.7, focus="self", task="inOutNoTask", model="gpt-4o", demographics="None", append=True, topic="joke", cot=False, prefix=""):
+    filename_base="_".join(map(str,[prefix, os.path.basename(model), lean, task, focus, temperature, topic, demographics, cot]))
+    print(filename_base)
+    if(not append):
+        pathlib.Path("data/"+filename_base+".csv").unlink(missing_ok=True)
+        pathlib.Path("data/"+filename_base+".db").unlink(missing_ok=True)
+
+    os.system("python3 "+fullpath+"expt7_notask.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --topic={} --demographics={} --cot={} --prefix={}".format(lean,model,focus,task,iteration, temperature, topic, demographics, cot, prefix))
+
+    return filename_base+".csv"
+
+def expt7b(iteration=50, lean="neutral", temperature=0.7, focus="self", task="inOutCountry", model="gpt-4o", demographics="None", append=True, topic="joke", cot=False, prefix=""):
+    filename_base="_".join(map(str,[prefix, os.path.basename(model), lean, task, focus, temperature, topic, demographics, cot]))
+    print(filename_base)
+    if(not append):
+        pathlib.Path("data/"+filename_base+".csv").unlink(missing_ok=True)
+        pathlib.Path("data/"+filename_base+".db").unlink(missing_ok=True)
+
+    os.system("python3 "+fullpath+"expt7b.py --lean={} --model={} --focus={} --task={} --iteration={} --temperature={} --topic={} --demographics={} --cot={} --prefix={}".format(lean,model,focus,task,iteration, temperature, topic, demographics, cot, prefix))
+
+    return filename_base+".csv"
 
 
 
@@ -162,7 +196,7 @@ print("\n\n\n========== gpt-4-1106-preview =========\n")
 analyze_self_percent_1samp('data/gpt-4-1106-preview_neutral_percent_self_0.7_None.csv')
 
 # Expt 5b
-# gptmix(iteration=50, append=True) # run your own experiment
+# gptmix(iteration=1, append=True) # run your own experiment
 print("\n\n\n========== Independent Agent Models =========\n")
 error_handler("data/gptmix_neutral_percent_self_0.7_None.csv")
 gptmix_stat("data/gptmix_neutral_percent_self_0.7_None.csv")
@@ -171,3 +205,18 @@ gptmix_stat("data/gptmix_neutral_percent_self_0.7_None.csv")
 # baseline(iteration=50, topic="joke", cot=True) # run your own experiment
 print("\n\n\n========== COT intervention =========\n")
 analyze_self_percent_ind("data/gpt-4o_neutral_percent_self_0.7_joke_None_True.csv", "data/gpt-4o_neutral_percent_self_0.7_None.csv")
+
+# Expt 7
+# expt7(iteration=29, prefix="compete", model="gpt-4o-2024-08-06", append=True) # run your own experiment
+print("\n\n\n========== in-out group compete =========\n")
+# in_out_regroup("data/_gpt-4o-2024-08-06_neutral_inOutNoTask_self_0.7_joke_None_False.csv")
+
+# Expt 7 no task
+# expt7noTask(iteration=29, prefix="", model="gpt-4o-2024-08-06", append=True) # run your own experiment
+print("\n\n\n========== in-out group no task =========\n")
+in_out_regroup("data/_gpt-4o-2024-08-06_neutral_inOutNoTask_self_0.7_joke_None_False.csv")
+
+# Expt 7b
+expt7b(iteration=1, prefix="model_place", model="mixed", append=False) # run your own experiment
+print("\n\n\n========== in-out group country =========\n")
+in_out_country("data/_mixed_neutral_inOutCountry_self_0.7_joke_None_False.csv")
